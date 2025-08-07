@@ -1,0 +1,835 @@
+.switch-message {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1.2rem;
+  padding: 20px;
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+
+
+.App {
+  text-align: center;
+  background-color: white;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.NavContainer{
+  background-color: rgb(255, 255, 255);
+  width: 100%;
+  height: 25vh;
+  position: fixed;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  align-items: center;
+  padding-top: 10vw;
+}
+
+.Nav{
+  display: flex;
+  justify-content:space-around;
+  align-items: center;
+  gap: 10px;
+}
+
+.NavIcon{
+  position: relative;
+}
+
+
+.Recipe-search-bar {
+  position: fixed;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1000px; /* or whatever your site max width is */
+  padding: 1em 2em;  /* avoid vw */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  border-bottom: solid 1px rgb(210, 210, 210);
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.Recipe-search-bar input {
+  padding: 10px;
+  width: 50vw;
+  border-radius: 10px;
+}
+
+.RecipeListContainer h2{
+  margin: auto;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  width: fit-content;
+  
+}
+
+.Recipehome{
+  position: relative;
+  max-width: 1000px;  /* or 90vw */
+  margin: 0 auto;
+  padding: 1em;
+  top: 208px;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.RecipeListContainer{
+  margin-top: 0vw;
+}
+
+.RecipeItemDetails{
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  gap: 20px;
+  background-color: yellow;
+  margin-bottom: 10px;
+  padding: 5px;
+  box-sizing: border-box;
+  height: 10vh;
+  overflow: hidden;
+}
+
+.RecipeImageContainer{
+  width: 20vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.InfoIconContainer{
+  box-sizing: border-box;
+  margin-left: auto;
+  margin-right: 10px;
+
+}
+
+.ItemList{
+padding: 0;
+}
+
+.RecipeItem{
+  width: 100%;
+  padding: 5px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  margin: auto;
+  margin-bottom: 20vh;
+  height: fit-content;
+}
+
+
+.HeaderContainer{
+  background-color: yellow;
+  height: 150px;
+  display: flex;
+  align-items: flex-end;
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 50;
+}
+
+.HeaderWrap{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0px 30px 20px 30px ;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.NotifyBellIcon{
+  position: relative;
+}
+
+.RecipeRatingWrap{
+  width: 8vw;
+  padding-right: 5vw;
+  padding-left: 20vw;
+}
+
+.RecipeRating{
+  color: yellow;
+  background-color: black;
+  margin: auto;
+  width: fit-content;
+  font-size: 20px;
+  padding: 2vw;
+  border-radius: 5px;
+}
+
+.RecipeCarousselContainer{
+  margin: 20px 5vw;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  gap: 20px;
+  width: 90vw;
+  box-sizing: border-box;
+  overflow-x: scroll;
+}
+
+.carousel .carousel-status{
+  display: none;
+}
+
+
+.CarouselImageBlock{
+  background-color: yellow;
+  height: 100%;
+  border-radius: 20px;
+}
+
+.carousel-root{
+  position: relative;
+  z-index: -10;
+}
+
+.CarouselInfoContainer{
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  font-size: large;
+}
+
+.CarouselImageContainer{
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.RecipeTitle{
+  font-size: 20px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: middle;
+  max-width: 200px;
+}
+
+
+.RecipeValue{
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: middle;
+  max-width: 200px;
+}
+
+.RecipeRemove{
+  color: yellow;
+  background-color: black;
+  margin: auto;
+  width: 30px;
+  height: 30px;
+  font-size: 24px;
+  line-height: 2px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.LeftGroup{
+display: flex;
+justify-items: center;
+align-items: center;
+}
+
+
+
+.RecipeInfoTextContainer{
+  flex: 1;
+  overflow: hidden;
+}
+
+.IngredientPageWrap{
+  position: fixed;
+  z-index: 100;
+  width: 100vw;
+  height: 100vh;
+  background-color: yellow;
+  overflow-y: scroll;
+}
+
+.TopBar{
+  display: flex;
+  width: 100vw;
+  height: 30vw;
+  background-color: rgb(0, 0, 0, 0.4);
+  position: fixed;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.ExpiryContainer{
+  color: white;
+}
+
+.ExpiryContainer span{
+  display: block;
+  text-align: center;
+}
+
+.IngredientImageBigContainer{
+  width: 100vw;
+}
+
+.TopGroup{
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px 0px 40px;
+  box-sizing: border-box;
+}
+
+.ValueTextContainer{
+  height: fit-content;
+  width: 100vw;
+  margin: 0px;
+  padding: 0px 40px;
+  box-sizing: border-box;
+}
+.IngredientName{
+  font-size: 24px;
+}
+
+.BottomGroup{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8vw;
+  padding-top: 15vw;
+  padding-bottom: 15vw;
+  box-sizing: border-box;
+}
+
+.BottomBtn{
+  background-color: black;
+  width: 40vw;
+  height: 14vw;
+  border-radius: 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  box-sizing: border-box;
+  gap: 5px;
+  line-height:2px;
+}
+
+.BtnIconContainer{
+  width: 8vw;
+  position: relative;
+}
+
+.NotifyCount{
+  background-color: yellow;
+  color: black;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.BottomGroupOne{
+  padding: 8vw;
+  padding-top: 15vw;
+  padding-bottom: 15vw;
+  box-sizing: border-box;
+}
+
+.BottomGroupTop{
+  display: flex;
+  justify-content: space-between;
+}
+
+.BottomGroupBottom{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5vw;
+}
+
+.BottomBtnBottom{
+  background-color: red;
+  width: 50vw;
+  height: 14vw;
+  border-radius: 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  box-sizing: border-box;
+  gap: 5px;
+  line-height:2px;
+}
+
+.Top-bar-group{
+  display: flex;
+  width: 100vw;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0vw 5vw;
+  box-sizing: border-box;
+  padding-right: 25vw;
+  box-shadow: 0 1px 5px rgb(0, 0, 0, 0.4);
+  margin-top: 150px;
+  position: fixed;
+  background-color: white;
+}
+
+.RecipeImageInputContainer{
+  width: 100%;
+  height: 50vw;
+  border-radius: 10px;
+  background-color: #D9D9D9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5vw;
+  
+}
+
+.Formcontainer{
+  margin: 0 5vw;
+}
+
+.RecipeNameInputContainer{
+  box-sizing: border-box;
+  width: 90vw;
+}
+
+.RecipeNameInputContainer input{
+  padding: 3vw 5vw;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 22px;
+  border: 4px solid #D9D9D9;
+  border-radius:15px;
+  line-height: 0;
+}
+
+.SelectIngredientText{
+  font-size: x-large;
+}
+
+.SelectedIngredient{
+  display: flex;
+  border: 1px solid #D9D9D9;
+  border-radius: 5px;
+  height: 30px;
+  padding: 2px 10px;
+  width: fit-content;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.RemoveIngredientIcon{
+  display: flex;
+  width: fit-content;
+  justify-content: center;
+  align-items: center;
+  padding-left: 5px;
+}
+
+.AddIngredientButton{
+  background-color: black;
+  border-radius:10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 42px;
+}
+
+.SelectedIngredientsContainer{
+  height: fit-content;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 10px;
+}
+
+.AddRecipeForm{
+  overflow-y: scroll;
+  padding-bottom: 230px;
+  padding-top: 26vh;
+}
+
+.InstructionTextInput{
+  width: 100%;
+  height: 50vw;
+  border: solid 4px #D9D9D9;
+  border-radius: 15px;
+  box-sizing: border-box;
+  padding: 5vw;
+  font-size: 24px;
+  padding-bottom: 10vw;
+  text-align: left;
+}
+
+.SaveRecipeBtnContainer{
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 55px;
+  width: 205px;
+  border-radius: 10px;
+  background-color: black;
+  font-size: 24px;
+  margin: 5vw auto;
+}
+
+.AddIngredientOverlayContainer{
+  position: fixed;
+  top: 0;
+  background-color: rgb(0, 0, 0, 0.9);
+  width: 100vw;
+  height: 100vh;
+  z-index: 70;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.IngredientSearchContainer{
+  
+  height: 30vh;
+}
+
+.IngredientSearchContainer h1{
+  color: white;
+  text-align: center;
+}
+
+.IngredientSearchContainer input{
+  background-color: white;
+}
+
+.IngredientSearchResultsContainer{
+  width: 100%;
+  color: white;
+  height: 15vw;
+  border-bottom: white 1px solid;
+}
+
+.IngredientSearchResult{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  padding-left: 24px;
+}
+
+.IngredientSearchResultsContainer span{
+  font-size:x-large;
+}
+
+.SearchResultsWrap{
+  height: 20vh;
+  box-sizing: border-box;
+  overflow-y: scroll;
+}
+
+.RecipeAddedText{
+  display: block;
+  text-align: center;
+  font-size: x-large;
+  font-weight: bolder;
+  margin: 30px 0;
+}
+
+.RecipeAddedGroupContainer{
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.NotificationPane{
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: yellow;
+  position: relative;
+  top: 0;
+  z-index: 110;
+  justify-content: center;
+  align-items: center;
+}
+
+.NotificationDisplayWrap{
+  width: 90vw;
+  position: fixed;
+  top: 15vh;
+}
+
+.NotifyTopGroup{
+  display: flex;
+  justify-content: space-between;
+  padding: 0 5vw;
+}
+
+.NotificationDisplay{
+  display: block;
+  justify-content: center;
+  align-items: flex-start;
+  height: 50vh;
+  margin-top: 8vh;
+  box-sizing: border-box;
+  margin-left: 5vw;
+  overflow-y: scroll;
+}
+
+.NotificationItem{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 80vw;
+  
+}
+
+.TextTopGroup{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.SignContainer{
+ font-size: xx-large;
+ margin-right: 15px;
+}
+
+.MenuBarContainer{
+  position: relative;
+  width: 70vw;
+  height: 100vh;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  padding-top: 150px;
+  
+}
+
+.MenuContainer{
+  
+  width: 70%;
+  
+  
+}
+
+.MenuBarOverlay{
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgb(0, 0, 0, 0.9);
+  z-index: 120;
+}
+
+.MenuTopGroup{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 50px;
+}
+
+.MenuMiddleGroup{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 450px;
+}
+
+.MenuBottomGroup{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5vw;
+}
+
+.SignOutIcon{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 10vw;
+
+}
+
+.Avatar{
+  width: 12vw;
+  font-size: x-large;
+}
+
+.NotifyCountBlack{
+  background-color: rgb(0, 0, 0);
+  color: yellow;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.BlackBellContainer{
+  position: absolute;
+  right: 5vw;
+}
+
+
+.SearchDisplayContainer{
+  width:100vw;
+  background-color: yellow;
+  height: fit-content;
+  position: fixed;
+  text-align: center;
+  padding: 0;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.SearchDisplayContainer ul{
+  list-style-type: none;
+  padding: 20px;
+  padding-bottom: 40px;
+  margin: auto;
+
+}
+
+.SearchedItem{
+  font-size: x-large;
+  font-weight: 600;
+  border-bottom: 1px solid black;
+  padding-bottom: 10px;
+  padding-top: 10px;
+  padding-left: 30vw;
+  padding-right: 30vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.SearchDisplayContainer {
+  max-height: 50vh;
+  overflow-y: auto;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 99;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  
+}
+
+
+.SearchDisplayContainer.show {
+  opacity: 1;
+  background-color: yellow;
+  
+}
+  
+.SearchList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  
+}
+
+.SearchResult {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.SearchResult:hover {
+  background-color: #f5f5f5;
+}
+
+
+
+
+
+
+
+
