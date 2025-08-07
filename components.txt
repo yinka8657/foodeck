@@ -1,0 +1,24 @@
+import RecipeHome from './RecipeHome';
+<RecipeHome />
+----------------------------------
+import RecipeSuggestionList from './RecipeSuggestionList'
+<RecipeSuggestionList />
+--------------------------------
+import IngredientList from './IngredientList';
+<IngredientList />
+------------------------------
+import IngredientPage from './IngredientPage';
+<IngredientPage />
+----------------------------------
+import RecipePage from './RecipePage';
+<RecipePage />
+
+
+import AddIngredient from './AddIngredient';
+<AddIngredient />
+
+import AddRecipe from './AddRecipe';
+<AddRecipe />
+
+import SelectIngredient from './SelectIngredient';
+<SelectIngredient />
