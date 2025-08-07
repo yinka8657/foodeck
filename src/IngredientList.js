@@ -11,7 +11,7 @@ function IngredientList({ selectedIngredients, setSelectedIngredients }) {
   const [showSearch, setShowSearch] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState(null);
 
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Load from localStorage when component mounts
     const saved = localStorage.getItem("selectedIngredients");

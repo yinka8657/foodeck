@@ -2,7 +2,6 @@ import './App.css';
 import backbutton from './backcirclebutton.svg';
 import ingredientlisticon from './ingredient-list-white-icon.svg';
 import suggstionicon from './suggestion-white-icon.svg';
-import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 
 
