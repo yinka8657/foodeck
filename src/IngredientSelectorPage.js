@@ -1,17 +1,8 @@
 // src/IngredientSelectorPage.js
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import IngredientList from './IngredientList';
 
-function IngredientSelectorPage() {
-  const [selectedIngredients, setSelectedIngredients] = useState(() => {
-    const saved = localStorage.getItem('selectedIngredients');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem('selectedIngredients', JSON.stringify(selectedIngredients));
-  }, [selectedIngredients]);
-
+function IngredientSelectorPage({ selectedIngredients, setSelectedIngredients }) {
   return (
     <div style={{ padding: '1em' }}>
       <IngredientList

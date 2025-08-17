@@ -1,427 +1,304 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const authRoutes = require('./authRoutes');
+const db = require('./db');  // your better-sqlite3 instance
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Allow CORS so React can connect
+// *** IMPORTANT: trust proxy setting ***
+// This tells Express to trust the first proxy (e.g. nginx, Heroku router, Cloudflare) that forwards requests.
+// Needed for correct IP detection behind proxies (fixes your X-Forwarded-For warning).
+app.set('trust proxy', 1);
+
+// Middlewares
 app.use(cors());
+app.use(express.json()); // needed for POST JSON bodies
+app.use(helmet());
 
-app.use(express.json()); // <-- Needed for POST requests
+// Rate limiter: limits each IP to 100 requests per 15 minutes
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable `X-RateLimit-*` headers
+  })
+);
 
-// Dummy recipes data
-const recipes = [
-  {
-    id: 1,
-    "title": 'Jollof Rice',
-    "value": 'Carbohydrate',
-    "time": '45–60 mins',
-    "image": 'https://www.yumlista.com/storage/recipes/AiEgolJU4zflIQ03P49S9Czgbtjp0DptdYOa2nM5.jpg',
-    "ingredients": ['2 cups long grain parboiled rice','4 large tomatoes','2 red bell peppers','2 scotch bonnet peppers','1 large onion (divided)','3 tablespoons tomato paste','1/4 cup vegetable oil','2 teaspoons curry powder','1 teaspoon dried thyme','2 bay leaves','2 seasoning cubes','Salt to taste','2–3 cups chicken stock or water','Optional: butter, sliced fresh tomato & onion for garnish'],
-    instructions: 'To prepare Nigerian Jollof Rice, start by blending the tomatoes, red bell peppers, scotch bonnet peppers, and half of the onion into a smooth mixture, then boil the blend to reduce water content. In a pot, heat oil and sauté the remaining sliced onions until fragrant, then stir in tomato paste and fry for about 5 minutes to remove its tang. Add the reduced pepper mixture and cook on medium heat, stirring often, until the sauce thickens and the oil floats to the top. Season with curry powder, thyme, bay leaves, seasoning cubes, and salt. Rinse the parboiled rice until the water runs clear, then add it to the sauce, stirring to coat each grain. Pour in chicken stock to just cover the rice, reduce the heat to low, cover the pot with foil and a lid to trap steam, and cook until the rice is tender and the liquid is absorbed. Stir lightly once or twice during cooking, and avoid burning. If desired, finish with a knob of butter and garnish with fresh tomato and onion slices before serving with fried plantain, chicken, or fish.'	
-  },
-  {
-    id: 2,
-    "title": 'Egusi Soup',
-    "value": 'Protein',
-    "time": '60 mins',
-    "image": 'https://lowcarbafrica.com/wp-content/uploads/2018/06/Egusi-Soup-IG-1.jpg',
-    "ingredients": ['2 cups Egusi (melon) seeds, ground','1 kg assorted meats (beef, goat meat, tripe, cow skin/shaki)','1 cup stockfish and/or dried fish','1 cup palm oil','1 medium onion, chopped','2 tablespoons ground crayfish','2 teaspoons ground pepper (or to taste)','2 seasoning cubes (e.g. Knorr or Maggi)','Salt, to taste','2 cups chopped spinach (or ugwu/ugu, bitterleaf or waterleaf)','3 cups meat stock (or water)','Optional: 1 scotch bonnet (for extra heat), 1 tsp iru (locust bean)'],
-    instructions:'To make Egusi Soup, start by washing and seasoning assorted meats (such as beef, goat meat, tripe, or cow skin) along with stockfish or dried fish using salt, chopped onions, and seasoning cubes, then boil until everything is tender. Meanwhile, prepare a thick paste by mixing ground egusi (melon seeds) with a little water. In a separate pot, heat palm oil and sauté chopped onions until soft, then add the egusi paste in scoops and let it fry without stirring for about 10–12 minutes until it begins to form soft lumps and release oil. Stir gently and allow it to cook further. Next, pour in the cooked meats, fish, and meat stock, then season with crayfish, ground pepper, more seasoning cubes, and salt to taste. Let the soup simmer on low heat for 10–15 minutes so the flavors can develop. Finally, add chopped leafy vegetables such as spinach, ugu, bitterleaf, or waterleaf, stir well, and cook for another 5–10 minutes until the vegetables are tender. Serve hot with pounded yam, eba, fufu, or rice.'
-  },
-  {
-    id: 3,
-    "title": 'Oil Beans',
-    "value": 'Protein & Fiber',
-    "time": '60–75 mins',
-    "image": 'https://www.seriouseats.com/thmb/M2fKreFO_aUCgHZxj-03J4vqIBg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/20240223-SEA-Ewa-Riro-MaureenCelestine-41-66d4b8c6ef3a4124807dfbf11398767d.jpg',
-    ingredients: [
-    "2 cups brown or black-eyed beans",
-    "1 medium onion, chopped",
-    "1/4 cup palm oil",
-    "2–3 tablespoons ground crayfish",
-    "1–2 scotch bonnet peppers",
-    "Salt to taste",
-    "1–2 seasoning cubes (Maggi or Knorr)",
-    "Water as needed",
-    "Fried plantain or yam (optional, for serving)"
-  ],
-  "instructions": "To make Nigerian stewed beans (Ewa), rinse and boil the beans in water until soft—this usually takes about 45 minutes to 1 hour depending on the type of beans used. Add water as needed while cooking to avoid burning and stir occasionally. Once the beans are soft and some have broken down to create a thick texture, reduce the heat and stir in chopped onions, ground crayfish, pepper, and palm oil. Add salt and seasoning cubes to taste, and let it simmer for another 10–15 minutes, stirring frequently to prevent sticking and to allow the flavors to blend. You can mash a portion of the beans if you prefer a thicker, more traditional Ewa consistency. Serve hot on its own or with fried plantains, bread, or boiled yam for a satisfying meal."
-  },
-  {
-    "id": 4,
-    "title": "Moi Moi",
-    "value": "Protein",
-    "time": "60 mins",
-    "image": "https://cdn.guardian.ng/wp-content/uploads/2024/08/Moimoi-with-corned-beef-recipe-by-Pinterest.jpg",
-    "ingredients": [
-      "Peeled brown beans",
-      "Red bell peppers",
-      "Onions",
-      "Scotch bonnets",
-      "Palm oil or vegetable oil",
-      "Seasoning cubes",
-      "Boiled eggs (optional)",
-      "Titus fish (optional)",
-      "Salt"
-    ],
-    "instructions": "Blend the peeled beans with red peppers, onions, and scotch bonnets until smooth. Mix the batter with oil, seasoning, and salt. Optionally add flaked fish and sliced boiled eggs. Pour mixture into containers or wraps (foil, leaves, or bowls) and steam for 45–60 minutes until firm. Allow to cool slightly and serve with pap, custard, or on its own."
-  },
-  {
-    "id": 5,
-    "title": "Afang Soup",
-    "value": "Protein & Vegetables",
-    "time": "55 mins",
-    "image": "https://www.mydiasporakitchen.com/wp-content/uploads/2018/05/img_0794.jpg",
-    "ingredients": [
-      "Water leaves",
-      "Okazi leaves",
-      "Beef",
-      "Stock fish",
-      "Snails",
-      "Periwinkle",
-      "Crayfish",
-      "Palm oil",
-      "Seasoning cubes",
-      "Salt"
-    ],
-    "instructions": "Wash and boil meats, stock fish, and snails until soft. Add palm oil, ground crayfish, seasoning cubes, and salt. Stir in finely sliced water leaves and cook briefly. Add shredded Okazi leaves and let it cook until thick and well combined. Add periwinkles and allow soup to simmer. Serve hot with fufu or pounded yam."
-  },
-    {
-    "id": 6,
-    "title": "Fisherman Soup",
-    "value": "Protein & Seafood",
-    "time": "45 mins",
-    "image": "https://www.chefspencil.com/wp-content/uploads/Fisherman-Soup-500x375.jpeg",
-    "ingredients": [
-      "Fresh fish (Catfish or Tilapia)",
-      "Shrimp",
-      "Periwinkle",
-      "Palm oil",
-      "Crayfish",
-      "Pepper",
-      "Onions",
-      "Uziza leaves",
-      "Seasoning cubes",
-      "Salt"
-    ],
-    "instructions": "Clean and season fish and seafood with salt, pepper, and onions. In a pot, heat palm oil and pour in ground crayfish and blended pepper. Add the seafood and allow to cook gently without stirring too much to avoid breaking the fish. Add uziza leaves and season to taste. Let simmer for a few minutes and serve hot with pounded yam or fufu."
-  },
-   {
-    "id": 7,
-    "title": "Nkwobi (Cow Foot Pepper Soup)",
-    "value": "Protein",
-    "time": "60 mins",
-    "image": "https://worldlytreat.com/wp-content/uploads/2023/03/Nkwobi-spicy-cow-leg.jpg",
-    "ingredients": [
-      "Cow foot (trotters)",
-      "Palm oil",
-      "Uziza leaves",
-      "Ehuru seeds (calabash nutmeg)",
-      "Potash",
-      "Seasoning cubes",
-      "Crayfish",
-      "Onion",
-      "Salt"
-    ],
-    "instructions": "Boil chopped cow foot with onions and seasoning cubes until tender. Mix palm oil with potash water until it thickens. Blend crayfish and ehuru, then add into the oil mix. Stir in the cooked cow foot and simmer for a few minutes. Garnish with sliced uziza leaves. Serve warm in a bowl as a delicacy or with a cold drink."
-  },
-  {
-    "id": 8,
-    "title": "Ofada Rice and Ayamase Sauce",
-    "value": "Carbohydrate & Protein",
-    "time": "70 mins",
-    "image": "https://leadership.ng/wp-content/uploads/2024/04/Screenshot-2024-04-14-061058.png",
-    "ingredients": [
-      "Ofada rice",
-      "Green bell peppers",
-      "Scotch bonnet (atarodo)",
-      "Onions",
-      "Assorted meat (shaki, ponmo, beef, etc.)",
-      "Palm oil",
-      "Locust beans (iru)",
-      "Seasoning cubes",
-      "Salt"
-    ],
-    "instructions": "Cook Ofada rice separately and set aside. For the Ayamase sauce, blend green peppers, scotch bonnet, and onions, then boil to reduce water. Bleach palm oil in a pot, add chopped onions, locust beans, and the blended pepper mix. Stir in boiled assorted meats, season with salt and cubes, then simmer until thick and oil rises to the top. Serve with the hot Ofada rice."
-  },
-  {
-    "id": 9,
-    "title": "Banga Soup",
-    "value": "Protein & Fat",
-    "time": "60 mins",
-    "image": "https://www.myactivekitchen.com/wp-content/uploads/2015/03/niger-delta-banga-soup-recipe-img-7-500x500.jpg",
-    "ingredients": [
-      "Palm nut extract",
-      "Beef or goat meat",
-      "Dry fish",
-      "Stockfish",
-      "Crayfish",
-      "Banga spices",
-      "Seasoning cubes",
-      "Scent leaves or dried basil",
-      "Salt"
-    ],
-    "instructions": "Boil meats, stockfish, and dry fish with seasoning cubes. In a separate pot, heat palm nut extract and let it boil. Add the cooked meats, ground crayfish, Banga spice mix, and salt. Stir and allow to simmer until thick. Add scent leaves toward the end of cooking for aroma. Serve hot with starch, fufu, or pounded yam."
-  },
-  {
-    "id": 10,
-    "title": "Bobotie",
-    "value": "Protein & Carbohydrate",
-    "time": "75 mins",
-    "image": "https://www.panningtheglobe.com/wp-content/uploads/2013/02/bobotie-square.jpg",
-    "ingredients": [
-      "Minced beef",
-      "Onions",
-      "Garlic",
-      "Bread slices",
-      "Milk",
-      "Curry powder",
-      "Turmeric",
-      "Chutney",
-      "Raisins",
-      "Eggs",
-      "Bay leaves",
-      "Salt",
-      "Black pepper"
-    ],
-    "instructions": "Soak the bread in milk, squeeze out excess, and mash. Sauté onions and garlic, add curry and turmeric, then stir in minced beef and cook till browned. Add mashed bread, chutney, raisins, salt, and pepper. Transfer mixture to a greased baking dish, flatten top, and pour over beaten eggs mixed with remaining milk. Place bay leaves on top and bake until custard is set and golden. Serve with yellow rice or salad."
-  },
-  {
-    "id": 11,
-    "title": "Couscous Royale",
-    "value": "Carbohydrate & Protein",
-    "time": "90 mins",
-    "image": "https://www.saveur.com/uploads/2019/02/08/FZ76GWAUBFC62GDJBRKTV647TQ.jpg?auto=webp",
-    "ingredients": [
-      "Couscous grains",
-      "Lamb chunks",
-      "Chicken thighs",
-      "Merguez sausages",
-      "Carrots",
-      "Zucchini",
-      "Chickpeas",
-      "Tomatoes",
-      "Onions",
-      "Garlic",
-      "Harissa",
-      "Olive oil",
-      "Spices (cumin, coriander, cinnamon)",
-      "Salt",
-      "Pepper"
-    ],
-    "instructions": "Brown all meats in olive oil, then remove. In the same pot, sauté onions, garlic, tomatoes, and spices. Add chickpeas, chopped carrots, and zucchini, then return the meats and cover with water. Simmer till tender. Prepare couscous by steaming or soaking in hot water and fluffing with a fork. Serve meats and vegetables over couscous with a dollop of harissa for heat."
-  },
-  {
-    "id": 12,
-    "title": "Yassa Poulet",
-    "value": "Protein & Fat",
-    "time": "60 mins",
-    "image": "https://travelandmunchies.com/wp-content/uploads/2023/02/IMG_1680-scaled.jpg",
-    "ingredients": [
-      "Chicken thighs or drumsticks",
-      "Lemons",
-      "Onions",
-      "Garlic",
-      "Mustard",
-      "Vegetable oil",
-      "Chili peppers",
-      "Bouillon cubes",
-      "Salt",
-      "Black pepper"
-    ],
-    "instructions": "Marinate chicken with lemon juice, mustard, chopped onions, garlic, salt, and pepper for several hours. Sear chicken in oil until browned, then set aside. In the same pot, cook down the marinated onions with more mustard and chilies. Return chicken to the pot and simmer until fully cooked and sauce is thickened. Serve hot with rice or couscous."
-  }
-];
+// Auth routes
+app.use('/api/auth', authRoutes);
 
+// --- Recipes Endpoints ---
 
-
-
-
-
-
-// GET endpoint
+// Get all recipes with ingredients included
 app.get('/api/recipes', (req, res) => {
-  res.json(recipes);
+  try {
+    const recipes = db.prepare(`
+      SELECT id, title, value, time, image_url AS image, description, instructions
+      FROM recipes ORDER BY id
+    `).all();
+
+    if (recipes.length === 0) return res.json([]);
+
+    const recipeIds = recipes.map(r => r.id);
+    const placeholders = recipeIds.map(() => '?').join(',');
+
+    const ingredientsRows = db.prepare(`
+      SELECT ri.recipe_id, i.name
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON ri.ingredient_id = i.id
+      WHERE ri.recipe_id IN (${placeholders})
+      ORDER BY i.name
+    `).all(...recipeIds);
+
+    const ingredientsByRecipe = {};
+    for (const row of ingredientsRows) {
+      if (!ingredientsByRecipe[row.recipe_id]) {
+        ingredientsByRecipe[row.recipe_id] = [];
+      }
+      ingredientsByRecipe[row.recipe_id].push(row.name);
+    }
+
+    const recipesWithIngredients = recipes.map(recipe => ({
+      ...recipe,
+      ingredients: ingredientsByRecipe[recipe.id] || [],
+    }));
+
+    res.json(recipesWithIngredients);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch recipes' });
+  }
 });
 
-
-// Search recipes by title
+// Search recipes by title (case insensitive)
 app.get('/api/recipes/search', (req, res) => {
-  const query = req.query.q?.toLowerCase() || '';
-  const filtered = recipes.filter(recipe =>
-    recipe.title.toLowerCase().includes(query)
-  );
-  res.json(filtered);
-});
-
-
-// Suggest recipes based on selected ingredients
-app.post("/api/recipes/suggest", (req, res) => {
-  const { selectedIngredients } = req.body;
-
-  if (!selectedIngredients || !Array.isArray(selectedIngredients)) {
-    return res.status(400).json({ error: "selectedIngredients must be an array" });
+  try {
+    const query = `%${(req.query.q || '').toLowerCase()}%`;
+    const recipes = db.prepare(`
+      SELECT id, title, value, time, image_url AS image, description 
+      FROM recipes 
+      WHERE LOWER(title) LIKE ? ORDER BY id
+    `).all(query);
+    res.json(recipes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to search recipes' });
   }
-
-  // Convert selected ingredients to lowercase for loose matching
-  const lowerCaseIngredients = selectedIngredients.map(i => i.toLowerCase());
-
-  // Filter recipes where at least one ingredient is matched
-  const matchingRecipes = recipes.filter(recipe => 
-    recipe.ingredients.some(ingredient =>
-      lowerCaseIngredients.some(selected =>
-        ingredient.toLowerCase().includes(selected)
-      )
-    )
-  );
-
-  res.json(matchingRecipes);
 });
 
+// Suggest recipes based on selected ingredients (with full ingredients included)
+app.post('/api/recipes/suggest', (req, res) => {
+  try {
+    const { selectedIngredients } = req.body;
+    if (!selectedIngredients || !Array.isArray(selectedIngredients)) {
+      return res.status(400).json({ error: 'selectedIngredients must be an array' });
+    }
 
+    if (selectedIngredients.length === 0) {
+      // Return all recipes with ingredients (reuse logic)
+      const recipes = db.prepare(`
+        SELECT id, title, value, time, image_url AS image, description, instructions
+        FROM recipes ORDER BY id
+      `).all();
 
+      if (recipes.length === 0) return res.json([]);
 
+      const recipeIds = recipes.map(r => r.id);
+      const placeholders = recipeIds.map(() => '?').join(',');
 
+      const ingredientsRows = db.prepare(`
+        SELECT ri.recipe_id, i.name
+        FROM recipe_ingredients ri
+        JOIN ingredients i ON ri.ingredient_id = i.id
+        WHERE ri.recipe_id IN (${placeholders})
+        ORDER BY i.name
+      `).all(...recipeIds);
 
+      const ingredientsByRecipe = {};
+      for (const row of ingredientsRows) {
+        if (!ingredientsByRecipe[row.recipe_id]) {
+          ingredientsByRecipe[row.recipe_id] = [];
+        }
+        ingredientsByRecipe[row.recipe_id].push(row.name);
+      }
 
+      const recipesWithIngredients = recipes.map(recipe => ({
+        ...recipe,
+        ingredients: ingredientsByRecipe[recipe.id] || [],
+      }));
 
+      return res.json(recipesWithIngredients);
+    }
 
+    // Lowercase ingredient names for case-insensitive matching
+    const loweredNames = selectedIngredients.map(i => i.toLowerCase());
 
+    // Prepare placeholders for SQLite query
+    const placeholders = loweredNames.map(() => '?').join(',');
 
+    // Get ingredient ids matching selected ingredients (case insensitive)
+    const ingredientRows = db.prepare(`
+      SELECT id FROM ingredients WHERE LOWER(name) IN (${placeholders})
+    `).all(...loweredNames);
 
+    if (ingredientRows.length === 0) {
+      // No matching ingredients found, return empty
+      return res.json([]);
+    }
 
+    const ingredientIds = ingredientRows.map(row => row.id);
 
+    // Find distinct recipes that have at least one of the selected ingredient ids
+    const recipes = db.prepare(`
+      SELECT DISTINCT r.id, r.title, r.value, r.time, r.image_url AS image, r.description, r.instructions
+      FROM recipes r
+      JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+      WHERE ri.ingredient_id IN (${ingredientIds.map(() => '?').join(',')})
+      ORDER BY r.id
+    `).all(...ingredientIds);
 
+    if (recipes.length === 0) {
+      return res.json([]);
+    }
 
+    // Get ingredients for all matched recipes in one query
+    const recipeIds = recipes.map(r => r.id);
+    const recipePlaceholders = recipeIds.map(() => '?').join(',');
 
-// Sample ingredients data
-const ingredients = [
-  {
-    id: 1,
-    name: "Salt",
-    image: "https://assets.clevelandclinic.org/transform/LargeFeatureImage/803796f4-66ab-4ba8-8967-b4ab94f07acf/TooMuchSodiuml-1051727580-770x533-1_jpg",
-    description: "Essential seasoning used in virtually every African dish.",
-    value: "Minerals",
-    expiry: "10/12/2028"
-  },
-  {
-    id: 2,
-    name: "Melon",
-    image: "https://www.neogric.com/wp-content/uploads/2025/04/Neogric-Melon-Seeds-2.jpg",
-    description: "Ground melon seeds used in thick soups like Egusi soup.",
-    value: "Protein",
-    expiry: "01/04/2029"
-  },
-  {
-    id: 3,
-    name: "Onion",
-    image: "https://www.bhg.com/thmb/vr6SyEgkmNO0Qu2wxph90gKYey4=/4000x0/filters:no_upscale():strip_icc()/BHG-recipes-how-to-cooking-basics-types-of-onions-hero-55bb0103826149529d4824f69372fa10.jpg",
-    description: "A strong-flavored vegetable used for its aromatic base.",
-    value: "Fiber",
-    expiry: "02/05/2029"
-  },
-  {
-    id: 4,
-    name: "Palm Oil",
-    image: "https://www.tastingtable.com/img/gallery/what-is-red-palm-oil-and-how-is-it-best-used/intro-1693393090.jpg",
-    description: "Rich red oil extracted from palm fruit, used in many Nigerian dishes.",
-    value: "Fat",
-    expiry: "07/11/2028"
-  },
-  {
-    id: 5,
-    name: "Maggi Cube",
-    image: "https://zeemart.shop/wp-content/uploads/2021/05/Maggi-Crayfish-2.jpg",
-    description: "Seasoning cube commonly used in African cooking for umami flavor.",
-    value: "Sodium",
-    expiry: "09/03/2027"
-  },
-  {
-    id: 6,
-    name: "Stockfish",
-    image: "https://www.foodvestglobal.com/wp-content/uploads/2024/01/Stockfishcut.jpg",
-    description: "Dried codfish used in stews and soups for added flavor.",
-    value: "Protein",
-    expiry: "05/02/2029"
-  },
-  {
-    id: 7,
-    name: "Crayfish",
-    image: "https://www.shutterstock.com/image-photo/dried-shrimp-market-600nw-2014339892.jpg",
-    description: "Dried and ground crustaceans used as seasoning in local dishes.",
-    value: "Protein",
-    expiry: "11/07/2029"
-  },
-  {
-    id: 8,
-    name: "Okra",
-    image: "https://cdn2.hubspot.net/hubfs/2731727/okra.jpg",
-    description: "A green vegetable used in okra soup, known for its slimy texture.",
-    value: "Fiber",
-    expiry: "04/12/2025"
-  },
-  {
-    id: 9,
-    name: "Bitterleaf",
-    image: "https://motherlandharvest.com/cdn/shop/products/F0C6C0D5-2D76-441A-AFFF-7E927B7361FA.jpg?v=1674152003",
-    description: "A leaf vegetable used in soups like bitterleaf soup (Ofe Onugbu).",
-    value: "Antioxidants",
-    expiry: "02/01/2026"
-  },
-  {
-    id: 10,
-    name: "Pepper",
-    image: "https://htsfarms.ng/wp-content/uploads/2024/03/Fresh-pepper-atarodo-1.jpg",
-    description: "Hot chili pepper used for heat and flavor in soups and sauces.",
-    value: "Vitamin C",
-    expiry: "03/08/2026"
+    const ingredientsRows = db.prepare(`
+      SELECT ri.recipe_id, i.name
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON ri.ingredient_id = i.id
+      WHERE ri.recipe_id IN (${recipePlaceholders})
+      ORDER BY i.name
+    `).all(...recipeIds);
+
+    // Group ingredients by recipe_id
+    const ingredientsByRecipe = {};
+    for (const row of ingredientsRows) {
+      if (!ingredientsByRecipe[row.recipe_id]) {
+        ingredientsByRecipe[row.recipe_id] = [];
+      }
+      ingredientsByRecipe[row.recipe_id].push(row.name);
+    }
+
+    // Attach ingredients array to each recipe
+    const recipesWithIngredients = recipes.map(recipe => ({
+      ...recipe,
+      ingredients: ingredientsByRecipe[recipe.id] || [],
+    }));
+
+    res.json(recipesWithIngredients);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to suggest recipes' });
   }
-];
-
-
-
-
-
-
-
-
-// Routes for ingredients
-
-// Get ingredients (optionally filtered by query)
-app.get("/api/ingredients", (req, res) => {
-  const query = req.query.q?.toLowerCase() || '';
-
-  const filteredIngredients = ingredients.filter(ingredient =>
-    ingredient.name.toLowerCase().includes(query)
-  );
-
-  res.json(filteredIngredients);
 });
 
-// Get one ingredient by ID
-app.get("/api/ingredients/:id", (req, res) => {
-  const ingredient = ingredients.find(i => i.id == req.params.id);
-  if (!ingredient) return res.status(404).json({ error: "Ingredient not found" });
-  res.json(ingredient);
+// Get detailed recipe by id with ingredients included
+app.get('/api/recipes/:id', (req, res) => {
+  try {
+    const recipeId = req.params.id;
+    const recipe = db.prepare(`
+      SELECT id, title, value, time, image_url AS image, description, instructions 
+      FROM recipes WHERE id = ?
+    `).get(recipeId);
+    if (!recipe) return res.status(404).json({ error: 'Recipe not found' });
+
+    // Get ingredient names for recipe
+    const ingredients = db.prepare(`
+      SELECT i.id, i.name, i.image, i.description, i.value, i.expiry
+      FROM ingredients i
+      JOIN recipe_ingredients ri ON i.id = ri.ingredient_id
+      WHERE ri.recipe_id = ?
+      ORDER BY i.name
+    `).all(recipeId);
+
+    res.json({ ...recipe, ingredients });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch recipe details' });
+  }
 });
 
-// Add a new ingredient
-app.post("/api/ingredients", (req, res) => {
-  const { name, image, description } = req.body;
-  const newIngredient = {
-    id: ingredients.length + 1,
-    name,
-    image,
-    description
-  };
-  ingredients.push(newIngredient);
-  res.status(201).json(newIngredient);
+// --- Ingredients Endpoints ---
+
+// Get all ingredients (optionally filtered by query)
+app.get('/api/ingredients', (req, res) => {
+  try {
+    const q = `%${(req.query.q || '').toLowerCase()}%`;
+    const ingredients = db.prepare(`
+      SELECT id, name, image, description, value, expiry 
+      FROM ingredients
+      WHERE LOWER(name) LIKE ?
+      ORDER BY name
+    `).all(q);
+    res.json(ingredients);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch ingredients' });
+  }
 });
 
+// Get ingredient by id
+app.get('/api/ingredients/:id', (req, res) => {
+  try {
+    const ingredient = db.prepare(`
+      SELECT id, name, image, description, value, expiry FROM ingredients WHERE id = ?
+    `).get(req.params.id);
 
+    if (!ingredient) return res.status(404).json({ error: 'Ingredient not found' });
+    res.json(ingredient);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch ingredient' });
+  }
+});
 
+// Add new ingredient
+app.post('/api/ingredients', (req, res) => {
+  try {
+    const { name, image, description, value, expiry } = req.body;
+    if (!name || !image || !description) {
+      return res.status(400).json({ error: 'name, image, and description are required' });
+    }
 
+    const insert = db.prepare(`
+      INSERT INTO ingredients (name, image, description, value, expiry)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+
+    const info = insert.run(name, image, description, value || '', expiry || '');
+
+    const newIngredient = db.prepare('SELECT * FROM ingredients WHERE id = ?').get(info.lastInsertRowid);
+
+    res.status(201).json(newIngredient);
+  } catch (error) {
+    console.error(error);
+    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return res.status(409).json({ error: 'Ingredient with this name already exists' });
+    }
+    res.status(500).json({ error: 'Failed to add ingredient' });
+  }
+});
+
+// 404 handler for unknown routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
+// Global error handler (for next(err))
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
 
 // Start server
 app.listen(PORT, () => {

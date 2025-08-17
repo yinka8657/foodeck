@@ -3,31 +3,20 @@ import addrecipeicon from './addrecipeicon.svg';
 import removeicon from './removeicon.svg';
 import removeiconconfirm from './removeiconconfirm.svg';
 import search from './search.svg';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { Link } from 'react-router-dom';
+import { SelectedIngredientsContext } from './SelectedIngredientsContext';  // import your context
 
-function IngredientList({ selectedIngredients, setSelectedIngredients }) {
+function IngredientList() {
+  // Use context instead of props
+  const { selectedIngredients, setSelectedIngredients } = useContext(SelectedIngredientsContext);
+
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState(null);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    // Load from localStorage when component mounts
-    const saved = localStorage.getItem("selectedIngredients");
-    if (saved) {
-      setSelectedIngredients(JSON.parse(saved));
-    }
-  }, []);
-  
-  useEffect(() => {
-    // Save to localStorage whenever it changes
-    localStorage.setItem("selectedIngredients", JSON.stringify(selectedIngredients));
-  }, [selectedIngredients]);
-
-
-
-
+  // Debounced search effect
   useEffect(() => {
     if (query.trim() === '') {
       setSearchResults([]);
@@ -36,10 +25,9 @@ function IngredientList({ selectedIngredients, setSelectedIngredients }) {
     }
 
     const timeoutId = setTimeout(() => {
-      fetch(`http://localhost:5000/api/ingredients?q=${query}`)
+      fetch(`http://localhost:5000/api/ingredients?q=${encodeURIComponent(query)}`)
         .then(res => res.ok ? res.json() : [])
         .then(data => {
-          console.log("Search Results:", data);
           setSearchResults(data);
           setShowSearch(true);
         })
@@ -52,20 +40,20 @@ function IngredientList({ selectedIngredients, setSelectedIngredients }) {
     return () => clearTimeout(timeoutId);
   }, [query]);
 
+  // Add ingredient if not already selected
   const handleSelectResult = (item) => {
-    if (!selectedIngredients.find(r => r.id === item.id)) {
-      const updated = [item, ...selectedIngredients];
-      setSelectedIngredients(updated);
+    if (!selectedIngredients.some(r => r.id === item.id)) {
+      setSelectedIngredients([item, ...selectedIngredients]);
     }
     setQuery('');
     setShowSearch(false);
   };
 
+  // Remove ingredient with confirm click
   const handleRemoveClick = (id, e) => {
     e.stopPropagation();
     if (confirmRemoveId === id) {
-      const updated = selectedIngredients.filter(item => item.id !== id);
-      setSelectedIngredients(updated);
+      setSelectedIngredients(selectedIngredients.filter(item => item.id !== id));
       setConfirmRemoveId(null);
     } else {
       setConfirmRemoveId(id);
@@ -74,14 +62,14 @@ function IngredientList({ selectedIngredients, setSelectedIngredients }) {
 
   return (
     <div className="Recipehome">
-      <div className='Recipe-search-bar'>
+      <div className='Recipe-search-bar' style={{boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'}}>
         <img src={addrecipeicon} alt="add recipe" style={{ width: '10vw' }} />
         <input
           type="text"
           placeholder="Search Ingredient"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          style={{ fontSize: '20px' }}
+          style={{ fontSize: '20px', marginRight: '10px', marginLeft: '10px' }}
         />
         <img src={search} alt="search" style={{ width: '8vw' }} />
       </div>
@@ -91,39 +79,59 @@ function IngredientList({ selectedIngredients, setSelectedIngredients }) {
           {searchResults.length === 0 && query && (
             <li className='SearchResult'>No results</li>
           )}
-          {searchResults.map((item, index) => (
-            <li className='SearchResult' key={index} onClick={() => handleSelectResult(item)}>
+          {searchResults.map(item => (
+            <li
+              className='SearchResult'
+              key={item.id}
+              onClick={() => handleSelectResult(item)}
+            >
               <span>{item.name}</span>
             </li>
           ))}
         </ul>
       </div>
-
       <div className='RecipeListContainer'>
         <div className='RecipeListTopContainer'>
           <div className='RecipeItem'>
             <ul className='ItemList'>
+
               {selectedIngredients.length === 0 && (
-                <li style={{ listStyle: 'none', padding: '1em', color: '#666', display: 'flex', justifyContent: 'center', alignItems: 'center', textAlign:'center' }}>
-                  No ingredients added yet. <br></br>
+                <li
+                  style={{
+                    listStyle: 'none',
+                    padding: '1em',
+                    color: '#666',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    textAlign: 'center'
+                  }}
+                >
+                  No ingredients added yet. <br />
                   Add Ingredients for Recipe Suggestions.
                 </li>
               )}
-              {selectedIngredients.map((item, index) => (
-                <li className='RecipeItemDetails' key={index}>
+              {selectedIngredients.map(item => (
+                <li className='RecipeItemDetails' key={item.id}>
                   <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    <div className='RecipeImageContainer' style={{width: '80px', height: '80px' , overFlow: 'hidden' , borderRadius: '8px'}}>
-                      <img
-                        src={item.image || "https://via.placeholder.com/100"}
-                        alt="ingredient"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                    <div className='RecipeInfoTextContainer' style={{ paddingLeft: '15px' }}>
-                      <span className='RecipeTitle'><strong>{item.name}</strong></span><br />
-                      <span className='RecipeValue'><strong>Value:</strong> {item.value}</span><br />
-                      <span className='CookingTime'><strong>Expires:</strong> {item.expiry}</span>
-                    </div>
+                    <Link
+                      to="/ingredientPage"
+                      state={{ ingredient: item }}
+                      style={{ textDecoration: 'none', color: 'inherit', display: 'flex', flex: 1 }}
+                    >
+                      <div className='RecipeImageContainer' style={{ width: '80px', height: '100px', overflow: 'hidden' }}>
+                        <img
+                          src={item.image || "https://via.placeholder.com/100"}
+                          alt="ingredient"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div className='RecipeInfoTextContainer' style={{ padding: '17px 15px', }}>
+                        <span className='RecipeTitle' style={{ lineHeight: '20px' }}><strong>{item.name}</strong></span><br />
+                        <span className='RecipeValue'><strong>Value:</strong> {item.value}</span><br />
+                        <span className='CookingTime'><strong>Expires:</strong> {item.expiry}</span>
+                      </div>
+                    </Link>
                     <div className='InfoIconContainer'>
                       <img
                         src={confirmRemoveId === item.id ? removeiconconfirm : removeicon}

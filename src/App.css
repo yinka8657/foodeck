@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+
 .switch-message {
   height: 100vh;
   display: flex;
@@ -10,6 +13,9 @@
   color: #333;
 }
 
+body {
+  font-family: 'Inter', sans-serif;
+}
 
 
 .App {
@@ -78,12 +84,12 @@
 
 .Recipe-search-bar {
   position: fixed;
-  top: 150px;
+  top: 120px;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
   max-width: 1000px; /* or whatever your site max width is */
-  padding: 1em 2em;  /* avoid vw */
+  padding: 1em 25px;  /* avoid vw */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -94,9 +100,13 @@
 }
 
 .Recipe-search-bar input {
-  padding: 10px;
-  width: 50vw;
   border-radius: 10px;
+  text-align: center;
+  background-color: rgb(188, 181, 154);
+  padding: 10px;
+  border: none;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .RecipeListContainer h2{
@@ -111,8 +121,8 @@
   position: relative;
   max-width: 1000px;  /* or 90vw */
   margin: 0 auto;
-  padding: 1em;
-  top: 208px;
+  padding: 10px;
+  top: 190px;
   overflow-x: hidden;
   box-sizing: border-box;
 }
@@ -129,10 +139,10 @@
   gap: 20px;
   background-color: yellow;
   margin-bottom: 10px;
-  padding: 5px;
   box-sizing: border-box;
-  height: 10vh;
+  height: 12vh;
   overflow: hidden;
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.4);
 }
 
 .RecipeImageContainer{
@@ -157,7 +167,7 @@ padding: 0;
 
 .RecipeItem{
   width: 100%;
-  padding: 5px;
+  padding: 0px;
   border-radius: 5px;
   box-sizing: border-box;
   margin: auto;
@@ -168,7 +178,7 @@ padding: 0;
 
 .HeaderContainer{
   background-color: yellow;
-  height: 150px;
+  height: 120px;
   display: flex;
   align-items: flex-end;
   box-sizing: border-box;
@@ -333,6 +343,12 @@ align-items: center;
 
 .IngredientImageBigContainer{
   width: 100vw;
+  height: 40vh;
+}
+
+.IngredientImageBigContainer img{
+  object-fit: cover;
+  object-position: center;
 }
 
 .TopGroup{
@@ -340,7 +356,7 @@ align-items: center;
   width: 100%;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 40px 0px 40px;
+  padding: 30px 40px 0px 40px;
   box-sizing: border-box;
 }
 
@@ -620,27 +636,35 @@ align-items: center;
 }
 
 .NotificationPane{
-  display: flex;
+  position: fixed;  /* overlay entire viewport */
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: yellow;
-  position: relative;
-  top: 0;
-  z-index: 110;
-  justify-content: center;
-  align-items: center;
+  background-color: yellow; /* light transparent yellow overlay */
+  z-index: 1100; /* higher than other components */
+  display: flex;
+  justify-content: center;  /* center horizontally */
+  align-items: flex-start;  /* align near top */
+  padding-top: 50px;  /* space from top */
+  box-sizing: border-box;
 }
 
 .NotificationDisplayWrap{
-  width: 90vw;
-  position: fixed;
-  top: 15vh;
+  width: 100vw;
+  max-width: 400px; /* limit width for desktop */
+  background-color:yellow; /* panel background */
+  border-radius: 8px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 1rem;
+  box-sizing: border-box;
 }
 
 .NotifyTopGroup{
   display: flex;
   justify-content: space-between;
-  padding: 0 5vw;
+  box-sizing: border-box;
 }
 
 .NotificationDisplay{
@@ -659,6 +683,7 @@ align-items: center;
   justify-content: space-between;
   align-items: center;
   width: 80vw;
+  margin-bottom: 20px;
   
 }
 
@@ -681,13 +706,14 @@ align-items: center;
   display: flex;
   justify-content: center;
   padding-top: 150px;
+ 
   
 }
+
 
 .MenuContainer{
   
   width: 70%;
-  
   
 }
 
@@ -708,9 +734,10 @@ align-items: center;
 
 .MenuMiddleGroup{
   display: flex;
-  justify-content: space-between;
+  justify-content: left;
   align-items: center;
-  margin-bottom: 450px;
+  margin-bottom: 250px;
+  gap: 20px;
 }
 
 .MenuBottomGroup{
@@ -736,8 +763,8 @@ align-items: center;
 .NotifyCountBlack{
   background-color: rgb(0, 0, 0);
   color: yellow;
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
   position: absolute;
   top: -5px;
@@ -749,7 +776,7 @@ align-items: center;
 
 .BlackBellContainer{
   position: absolute;
-  right: 5vw;
+  right: 8vw;
 }
 
 
@@ -817,9 +844,9 @@ align-items: center;
 }
 
 .SearchResult {
-  padding: 12px 16px;
+  padding: 20px 16px;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 .SearchResult:hover {
@@ -828,7 +855,108 @@ align-items: center;
 
 
 
+.no-recipe-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px; /* adjust based on your layout */
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #555;
+  text-align: center;
+}
 
+
+.center-message {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1rem;
+  color: #666;
+}
+
+
+/* Overlay covers entire viewport with semi-transparent black background */
+.MenuBarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-start; /* menu sticks left */
+  align-items: stretch;
+}
+
+/* The side menu container */
+.MenuBarContainer {
+  width: 280px; /* menu width */
+  background-color: #fff;
+  height: 100vh;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  padding: 100px 40px 100px 40px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  /* Optional: transition for slide-in effect */
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+/* Inner container for flex layout */
+.MenuContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* Optional: style the Close button container */
+.CloseBtn {
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+}
+
+/* Avatar container */
+.Avatar {
+  width: 60px;
+  height: 60px;
+}
+
+/* Bottom group clickable area */
+.MenuBottomGroup {
+  margin-top: auto; /* push to bottom */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.WhatsCookinText {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  margin: auto;
+}
+
+div[style*="padding: 1em"] {
+  padding: 0 !important;
+}
+
+.SocialsContainer{
+  display: flex;
+  margin: auto;
+  gap: 10px;
+  justify-content: center;
+}
+
+.SocialIcon{
+  width: 40px;
+}
 
 
 
