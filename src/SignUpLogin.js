@@ -1,37 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "./logo.svg";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-// ✅ Reset base styles at component level (better: put in index.css)
-const pageStyles = {
-  htmlBodyRoot: {
-    margin: 0,
-    padding: 0,
-    height: "100%",
-    width: "100%",
-  },
-};
-
 const styles = {
   container: {
     width: "100%",
-    minHeight: "100dvh", // ✅ dynamic viewport height for mobile
+    minHeight: "100dvh", // dynamic viewport height
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "1.5em", // ✅ prevents touching screen edges
+    padding: "1.5em",
     boxSizing: "border-box",
     backgroundColor: "yellow",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    overflow: "hidden", // prevents scroll
   },
   innerBox: {
     width: "100%",
-    maxWidth: "420px", // ✅ keeps it neat on large screens
+    maxWidth: "420px",
     backgroundColor: "white",
     borderRadius: "12px",
     padding: "2rem 1.5rem",
-    //boxShadow: "0 4px 12px rgba(0,0,0,0.15)"//,
     boxSizing: "border-box",
     textAlign: "center",
   },
@@ -103,20 +93,27 @@ const styles = {
 };
 
 export default function SignUpLogin({ onLogin }) {
-
   useEffect(() => {
-    // Disable scrolling on body
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.width = "100%";
+    // Disable elastic scrolling on iOS/Android
+    const body = document.body;
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.width = "100%";
+    body.style.touchAction = "none";
+    body.style.webkitOverflowScrolling = "auto";
+
+    // Status bar color for mobile browsers
+    const metaTheme = document.querySelector("meta[name=theme-color]");
+    if (metaTheme) metaTheme.setAttribute("content", "yellow");
 
     return () => {
-      // Reset when component unmounts
-      document.body.style.overflow = "auto";
-      document.body.style.position = "static";
+      body.style.overflow = "auto";
+      body.style.position = "static";
+      body.style.touchAction = "auto";
+      body.style.webkitOverflowScrolling = "touch";
+      if (metaTheme) metaTheme.setAttribute("content", "#ffffff");
     };
   }, []);
-
 
   const [isSignUp, setIsSignUp] = useState(true);
   const [form, setForm] = useState({
@@ -141,9 +138,7 @@ export default function SignUpLogin({ onLogin }) {
     });
   };
 
-  const handleChange = (e) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-  };
+  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -182,7 +177,7 @@ export default function SignUpLogin({ onLogin }) {
         setSuccess("Registration successful! Confirm Email & Log in.");
         setIsSignUp(false);
         setForm({ email, username: "", password: "", confirmPassword: "" });
-      } catch (err) {
+      } catch {
         setError("Network error, please try again.");
       } finally {
         setLoading(false);
@@ -209,10 +204,9 @@ export default function SignUpLogin({ onLogin }) {
 
         setSuccess("Login successful!");
         localStorage.setItem("authToken", data.token || "");
-        const userData = data.user || { email };
-        localStorage.setItem("user", JSON.stringify(userData));
-        onLogin?.(userData);
-      } catch (err) {
+        localStorage.setItem("user", JSON.stringify(data.user || { email }));
+        onLogin?.(data.user || { email });
+      } catch {
         setError("Network error, please try again.");
       } finally {
         setLoading(false);
