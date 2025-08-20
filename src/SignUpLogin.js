@@ -20,7 +20,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "0", // ✅ prevents touching screen edges
+    padding: "1.5em", // ✅ prevents touching screen edges
     boxSizing: "border-box",
     backgroundColor: "yellow",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -31,7 +31,7 @@ const styles = {
     backgroundColor: "white",
     borderRadius: "12px",
     padding: "2rem 1.5rem",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    //boxShadow: "0 4px 12px rgba(0,0,0,0.15)"//,
     boxSizing: "border-box",
     textAlign: "center",
   },
