@@ -4,19 +4,19 @@ import logo from "./logo.svg";
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const styles = {
-  container: {
+  outerContainer: {
     width: "100%",
-    minHeight: "100dvh", // dynamic viewport height
+    height: "100dvh", // full dynamic viewport height
+    overflow: "hidden", // prevent body scroll
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "1.5em",
-    boxSizing: "border-box",
     backgroundColor: "yellow",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    overflow: "hidden", // prevents scroll
   },
-  innerBox: {
+  scrollableInner: {
+    maxHeight: "90dvh", // allow inner scrolling if needed
+    overflowY: "auto",
     width: "100%",
     maxWidth: "420px",
     backgroundColor: "white",
@@ -64,9 +64,9 @@ const styles = {
     backgroundColor: "#F1F3F5",
     padding: "12px",
     border: "none",
-    boxSizing: "border-box",
     width: "100%",
     fontSize: "16px",
+    boxSizing: "border-box",
   },
   submitBtn: {
     width: "100%",
@@ -93,28 +93,6 @@ const styles = {
 };
 
 export default function SignUpLogin({ onLogin }) {
-  useEffect(() => {
-    // Disable elastic scrolling on iOS/Android
-    const body = document.body;
-    body.style.overflow = "hidden";
-    body.style.position = "fixed";
-    body.style.width = "100%";
-    body.style.touchAction = "none";
-    body.style.webkitOverflowScrolling = "auto";
-
-    // Status bar color for mobile browsers
-    const metaTheme = document.querySelector("meta[name=theme-color]");
-    if (metaTheme) metaTheme.setAttribute("content", "yellow");
-
-    return () => {
-      body.style.overflow = "auto";
-      body.style.position = "static";
-      body.style.touchAction = "auto";
-      body.style.webkitOverflowScrolling = "touch";
-      if (metaTheme) metaTheme.setAttribute("content", "#ffffff");
-    };
-  }, []);
-
   const [isSignUp, setIsSignUp] = useState(true);
   const [form, setForm] = useState({
     email: "",
@@ -126,16 +104,25 @@ export default function SignUpLogin({ onLogin }) {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    // prevent elastic scroll on iOS / mobile
+    const preventElasticScroll = (e) => e.preventDefault();
+    document.body.style.overflow = "hidden";
+    document.body.style.height = "100%";
+    document.addEventListener("touchmove", preventElasticScroll, { passive: false });
+
+    return () => {
+      document.body.style.overflow = "auto";
+      document.body.style.height = "auto";
+      document.removeEventListener("touchmove", preventElasticScroll);
+    };
+  }, []);
+
   const toggleForm = () => {
     setError("");
     setSuccess("");
     setIsSignUp(!isSignUp);
-    setForm({
-      email: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
-    });
+    setForm({ email: "", username: "", password: "", confirmPassword: "" });
   };
 
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -159,7 +146,6 @@ export default function SignUpLogin({ onLogin }) {
         setError("Passwords do not match.");
         return;
       }
-
       try {
         setLoading(true);
         const res = await fetch(`${API_URL}/api/auth/register`, {
@@ -167,13 +153,8 @@ export default function SignUpLogin({ onLogin }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, username, password }),
         });
-
         const data = await res.json();
-        if (!res.ok) {
-          setError(data.error || "Registration failed");
-          return;
-        }
-
+        if (!res.ok) return setError(data.error || "Registration failed");
         setSuccess("Registration successful! Confirm Email & Log in.");
         setIsSignUp(false);
         setForm({ email, username: "", password: "", confirmPassword: "" });
@@ -187,7 +168,6 @@ export default function SignUpLogin({ onLogin }) {
         setError("Please fill in all fields.");
         return;
       }
-
       try {
         setLoading(true);
         const res = await fetch(`${API_URL}/api/auth/login`, {
@@ -195,17 +175,13 @@ export default function SignUpLogin({ onLogin }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
-
         const data = await res.json();
-        if (!res.ok) {
-          setError(data.error || "Login failed");
-          return;
-        }
-
+        if (!res.ok) return setError(data.error || "Login failed");
         setSuccess("Login successful!");
         localStorage.setItem("authToken", data.token || "");
-        localStorage.setItem("user", JSON.stringify(data.user || { email }));
-        onLogin?.(data.user || { email });
+        const userData = data.user || { email };
+        localStorage.setItem("user", JSON.stringify(userData));
+        onLogin?.(userData);
       } catch {
         setError("Network error, please try again.");
       } finally {
@@ -215,8 +191,8 @@ export default function SignUpLogin({ onLogin }) {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.innerBox}>
+    <div style={styles.outerContainer}>
+      <div style={styles.scrollableInner}>
         <img src={logo} alt="Logo" style={styles.logo} />
         <p style={styles.introText}>
           {isSignUp
