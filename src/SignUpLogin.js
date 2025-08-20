@@ -20,7 +20,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "1.5rem", // ✅ prevents touching screen edges
+    padding: "0", // ✅ prevents touching screen edges
     boxSizing: "border-box",
     backgroundColor: "yellow",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",

@@ -17,6 +17,7 @@ body {
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;      /* prevent sideways scroll */
   overscroll-behavior-y: contain; /* prevent "bounce" on scroll up */
+  -webkit-overflow-scrolling: auto; /* Stops iOS elastic scroll */
 }
 
 
