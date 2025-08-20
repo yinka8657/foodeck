@@ -5,8 +5,8 @@ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
 const styles = {
   container: {
-    width: "100vw",
-    height: "100vh",
+    width: "100%",
+    minHeight: "100dvh", // ✅ dynamic vh, adjusts for browser bars
     margin: "auto",
     padding: "0px 30px",
     borderRadius: "8px",
@@ -16,7 +16,7 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     boxSizing: "border-box",
-    position: "fixed"
+    position: "relative" // ✅ allow natural flow
   },
   logo: {
     display: "block",
