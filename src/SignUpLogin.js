@@ -103,6 +103,21 @@ const styles = {
 };
 
 export default function SignUpLogin({ onLogin }) {
+
+  useEffect(() => {
+    // Disable scrolling on body
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+
+    return () => {
+      // Reset when component unmounts
+      document.body.style.overflow = "auto";
+      document.body.style.position = "static";
+    };
+  }, []);
+
+
   const [isSignUp, setIsSignUp] = useState(true);
   const [form, setForm] = useState({
     email: "",
