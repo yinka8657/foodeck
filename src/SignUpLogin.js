@@ -3,36 +3,52 @@ import logo from "./logo.svg";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
+// ✅ Reset base styles at component level (better: put in index.css)
+const pageStyles = {
+  htmlBodyRoot: {
+    margin: 0,
+    padding: 0,
+    height: "100%",
+    width: "100%",
+  },
+};
+
 const styles = {
   container: {
     width: "100%",
-    minHeight: "100dvh", // ✅ dynamic vh, adjusts for browser bars
-    margin: "auto",
-    padding: "0px 30px",
-    borderRadius: "8px",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    backgroundColor: "yellow",
+    minHeight: "100dvh", // ✅ dynamic viewport height for mobile
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    padding: "1.5rem", // ✅ prevents touching screen edges
     boxSizing: "border-box",
-    position: "relative" // ✅ allow natural flow
+    backgroundColor: "yellow",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  },
+  innerBox: {
+    width: "100%",
+    maxWidth: "420px", // ✅ keeps it neat on large screens
+    backgroundColor: "white",
+    borderRadius: "12px",
+    padding: "2rem 1.5rem",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    boxSizing: "border-box",
+    textAlign: "center",
   },
   logo: {
     display: "block",
-    margin: "0 auto 0px",
-    width: "40vw",
-    height: "fit-content",
+    margin: "0 auto 1rem",
+    width: "40%",
+    height: "auto",
   },
   introText: {
-    textAlign: "center",
     marginBottom: "15px",
     color: "#333",
     fontSize: "1.1rem",
   },
   toggleBtn: {
     display: "block",
-    margin: "0 auto 5px",
+    margin: "0 auto 15px",
     padding: "10px 20px",
     backgroundColor: "#DC143C",
     color: "#fff",
@@ -42,14 +58,15 @@ const styles = {
     fontWeight: "600",
   },
   formGroup: {
-    marginBottom: "10px",
+    marginBottom: "15px",
+    textAlign: "left",
   },
   label: {
     display: "block",
     marginBottom: "6px",
     fontWeight: "600",
     color: "black",
-    fontSize: "20px",
+    fontSize: "16px",
   },
   input: {
     borderRadius: "10px",
@@ -59,30 +76,29 @@ const styles = {
     border: "none",
     boxSizing: "border-box",
     width: "100%",
-    fontSize: "20px",
+    fontSize: "16px",
   },
   submitBtn: {
-    width: "80%",
+    width: "100%",
     padding: "12px",
     backgroundColor: "black",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "8px",
     color: "yellow",
     fontWeight: "700",
-    fontSize: "1.1rem",
+    fontSize: "1rem",
     cursor: "pointer",
   },
   errorText: {
     color: "red",
-    marginBottom: "15px",
+    marginBottom: "10px",
     fontSize: "0.9rem",
   },
   successText: {
     color: "green",
-    marginBottom: "15px",
+    marginBottom: "10px",
     fontSize: "1rem",
     fontWeight: "600",
-    textAlign: "center",
   },
 };
 
@@ -177,13 +193,9 @@ export default function SignUpLogin({ onLogin }) {
         }
 
         setSuccess("Login successful!");
-
-        // store token and user
         localStorage.setItem("authToken", data.token || "");
-        const userData = data.user || { email }; // fallback in case backend doesn't send user
+        const userData = data.user || { email };
         localStorage.setItem("user", JSON.stringify(userData));
-
-        // ✅ notify MainWrapper
         onLogin?.(userData);
       } catch (err) {
         setError("Network error, please try again.");
@@ -195,7 +207,7 @@ export default function SignUpLogin({ onLogin }) {
 
   return (
     <div style={styles.container}>
-      <div>
+      <div style={styles.innerBox}>
         <img src={logo} alt="Logo" style={styles.logo} />
         <p style={styles.introText}>
           {isSignUp
@@ -210,7 +222,7 @@ export default function SignUpLogin({ onLogin }) {
         {error && <div style={styles.errorText}>{error}</div>}
         {success && <div style={styles.successText}>{success}</div>}
 
-        <form onSubmit={handleSubmit} style={{ width: "80vw", margin: "auto" }}>
+        <form onSubmit={handleSubmit}>
           <div style={styles.formGroup}>
             <label htmlFor="email" style={styles.label}>Email</label>
             <input
@@ -267,15 +279,13 @@ export default function SignUpLogin({ onLogin }) {
             </div>
           )}
 
-          <div style={{ display: "flex", justifyContent: "center", paddingTop: "20px" }}>
-            <button
-              type="submit"
-              style={{ ...styles.submitBtn, opacity: loading ? 0.6 : 1 }}
-              disabled={loading}
-            >
-              {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Log In"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            style={{ ...styles.submitBtn, opacity: loading ? 0.6 : 1 }}
+            disabled={loading}
+          >
+            {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Log In"}
+          </button>
         </form>
       </div>
     </div>
