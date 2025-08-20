@@ -31,6 +31,10 @@ const MainLayout = ({ children, onLogout, user }) => {
 
   return (
     <SelectedIngredientsProvider>
+
+      {/* Fake status bar background for iOS */}
+      <div className="status-bar-fake"></div>
+      
       {/* Pass togglers to HeaderBar */}
       <HeaderBar 
         onMenuToggle={toggleMenu} 
