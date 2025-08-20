@@ -6,6 +6,8 @@ import search from './search.svg';
 import React, { useEffect, useState, useContext } from "react";
 import { Link } from 'react-router-dom';
 import { SelectedIngredientsContext } from './SelectedIngredientsContext';  // import your context
+import API_URL from "./config";
+
 
 function IngredientList() {
   // Use context instead of props
@@ -25,7 +27,7 @@ function IngredientList() {
     }
 
     const timeoutId = setTimeout(() => {
-      fetch(`http://localhost:5000/api/ingredients?q=${encodeURIComponent(query)}`)
+      fetch(`${API_URL}/api/ingredients?q=${encodeURIComponent(query)}`)
         .then(res => res.ok ? res.json() : [])
         .then(data => {
           setSearchResults(data);

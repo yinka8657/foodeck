@@ -85,7 +85,7 @@ function RecipeHome() {
                     >
                       <li className="RecipeItemDetails">
                         <div className="RecipeImageContainer">
-                          <img src={item.image} alt="recipeImage"
+                          <img src={item.image_url} alt="recipeImage"
                                style={{ width: "100%", objectFit: "cover", height: "100%" }} />
                         </div>
                         <div className="RecipeInfoTextContainer">
@@ -110,7 +110,7 @@ function RecipeHome() {
                     >
                       <li className="RecipeItemDetails">
                         <div className="RecipeImageContainer">
-                          <img src={item.image} alt="recipeImage"
+                          <img src={item.image_url} alt="recipeImage"
                                style={{ width: "100%", objectFit: "cover", height: "100%" }} />
                         </div>
                         <div className="RecipeInfoTextContainer">
@@ -123,6 +123,7 @@ function RecipeHome() {
                       </li>
                     </Link>
                   ))}
+                  <span style={{margin:"auto", display:"flex", justifyContent:"center", fontStyle:"italic", color:"gray"}}>- End of List -</span>
                 </>
               )}
             </div>

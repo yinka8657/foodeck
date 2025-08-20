@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react';
+import API_URL from "./config"; // ✅ import from central config
 
 export const SelectedIngredientsContext = createContext();
 
@@ -26,16 +27,14 @@ export const SelectedIngredientsProvider = ({ children }) => {
   const [recipeCount, setRecipeCount] = useState(0);
   const [loadingCount, setLoadingCount] = useState(false);
 
-  // New: Store all recipes globally
   const [recipes, setRecipes] = useState([]);
   const [loadingRecipes, setLoadingRecipes] = useState(true);
   const [recipeError, setRecipeError] = useState(null);
 
-  // Fetch all recipes ONCE when app starts
   useEffect(() => {
     let cancelled = false;
     setLoadingRecipes(true);
-    fetch("http://localhost:5000/api/recipes")
+    fetch(`${API_URL}/api/recipes`)
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text();
@@ -61,7 +60,6 @@ export const SelectedIngredientsProvider = ({ children }) => {
     };
   }, []);
 
-  // Fetch recipe count from API
   const fetchRecipeCount = useCallback(async (ingredients) => {
     const normalizedIngredients = normalizeNames(ingredients);
     if (normalizedIngredients.length === 0) {
@@ -70,7 +68,7 @@ export const SelectedIngredientsProvider = ({ children }) => {
     }
     try {
       setLoadingCount(true);
-      const res = await fetch("/api/recipes/suggest", {
+      const res = await fetch(`${API_URL}/api/recipes/suggest`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ selectedIngredients: normalizedIngredients }),
@@ -89,7 +87,6 @@ export const SelectedIngredientsProvider = ({ children }) => {
     }
   }, []);
 
-  // Update localStorage and count whenever ingredients change
   useEffect(() => {
     localStorage.setItem('selectedIngredients', JSON.stringify(selectedIngredients));
     fetchRecipeCount(selectedIngredients);

@@ -10,7 +10,7 @@ function HeaderBar({ onMenuToggle, onNotificationToggle }) {
   // Hide elements on specific paths
   const hideHeaderElements = ['/ingredient-to-recipe/suggestions', '/ingredient-to-recipe'].includes(location.pathname);
   const hideTitleElement = ['/', '/ingredient-to-recipe'].includes(location.pathname);
-  const hideIngredientTitle = ['/ingredient-to-recipe/suggestions', '/'].includes(location.pathname);
+  const hideIngredientTitle = ['/ingredient-to-recipe/suggestions', '/', '/admin/new-recipe'].includes(location.pathname);
 
   // Debug function for click and key press on hamburger
   const handleToggleMenu = () => {

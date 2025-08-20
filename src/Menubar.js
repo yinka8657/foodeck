@@ -6,7 +6,6 @@ import instagram from './instagram.svg';
 import solidcancel from './x-cancel-solid-icon.svg';
 import facebook from './facebook.svg';
 import tiktok from './tiktok.svg';
-import logo from './logo.svg';
 
 function MenuBar({ isOpen, onClose, onSignOut, user }) {
   if (!isOpen) return null; // Don't render if menu is closed
@@ -25,9 +24,15 @@ function MenuBar({ isOpen, onClose, onSignOut, user }) {
 
           {/* Top section with logo and close button */}
           <div className="MenuTopGroup">
-            <div className="MenuLogo" style={{ width: '40%' }}>
-              <img src={logo} alt="logo" style={{ width: '100%' }} />
+          <div className="MenuMiddleGroup">
+            <div className="Avatar">
+              <img src={avataricon} alt="avatar" style={{ width: '100%' }} />
+          </div>
+          <div>
+            <h2 style={{ margin:'auto' }}> Hello!</h2>
+              <span style={{ fontSize: 'large', display:'block' }}>{user?.username || 'Guest'}</span>
             </div>
+          </div>
             <div 
               className="CloseBtn" 
               onClick={onClose} 
@@ -42,15 +47,8 @@ function MenuBar({ isOpen, onClose, onSignOut, user }) {
           </div>
 
           {/* Middle section with avatar and user name */}
-          <div className="MenuMiddleGroup">
-            <div className="Avatar">
-              <img src={avataricon} alt="avatar" style={{ width: '100%' }} />
-          </div>
-          <div>
-            <h2 style={{ margin:'auto' }}> Hello!</h2>
-              <span style={{ fontSize: 'large', display:'block' }}>{user?.username || 'Guest'}</span>
-            </div>
-          </div>
+         
+          
 
 
           <div className='SocialsWrap'>

@@ -25,7 +25,7 @@ function RecipePage() {
         }
         setLoading(true);
         try {
-          const res = await fetch(`http://localhost:5000/api/recipes/${initialRecipe.id}`);
+          const res = await fetch(`/api/recipes/${initialRecipe.id}`);
           if (!res.ok) throw new Error('Failed to fetch recipe details');
           const data = await res.json();
           setRecipe(data);
@@ -94,7 +94,7 @@ function RecipePage() {
 
       {/* Main image */}
       <div className="IngredientImageBigContainer">
-        <img src={recipe.image} alt={recipe.title} style={{ width: '100%', height: '100%' }} />
+        <img src={recipe.image_url} alt={recipe.title} style={{ width: '100%', height: '100%' }} />
       </div>
 
       {/* Recipe details */}

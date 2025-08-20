@@ -38,7 +38,7 @@ const MyCarousel = ({ selectedIngredients = [] }) => {
                 style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
               >
                 <img
-                  src={recipe.image || "/placeholder.jpg"}
+                  src={recipe.image_url || "/placeholder.jpg"}
                   alt={recipe.title}
                   style={{ objectFit: "cover", height: "300px", width: "100%" }}
                 />
