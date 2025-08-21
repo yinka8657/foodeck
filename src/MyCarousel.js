@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
+import API_URL from "./config";
 
 const MyCarousel = ({ selectedIngredients = [] }) => {
   const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/recipes")
+    fetch("${API_URL}/api/recipes")
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
