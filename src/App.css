@@ -18,6 +18,10 @@ body {
   overflow-x: hidden;      /* prevent sideways scroll */
   overscroll-behavior-y: contain; /* prevent "bounce" on scroll up */
   -webkit-overflow-scrolling: auto; /* Stops iOS elastic scroll */
+  background-color: yellow;
+  padding-top: env(safe-area-inset-top);
+  box-sizing: border-box;
+  min-height: 100vh;
 }
 
 
@@ -962,10 +966,7 @@ div[style*="padding: 1em"] {
 }
 
 
-.status-bar-fake {
-  height: env(safe-area-inset-top); /* matches the notch area */
-  background-color: yellow; /* yellow */
-}
+
 
 
 
