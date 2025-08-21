@@ -31,17 +31,6 @@ const MainLayout = ({ children, onLogout, user }) => {
 
   return (
     <SelectedIngredientsProvider>
-
-      {/* Fake status bar background for iOS */}
-      <div style={{
-        backgroundColor: "yellow",
-        height: "40px",
-        width: "100%",
-        position: "relative",
-        zIndex: 9999
-      }}>
-        SAFE AREA TEST
-      </div>
       
       {/* Pass togglers to HeaderBar */}
       <HeaderBar 
