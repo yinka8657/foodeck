@@ -964,7 +964,7 @@ div[style*="padding: 1em"] {
 
 .status-bar-fake {
   height: env(safe-area-inset-top); /* matches the notch area */
-  background: #FFD700; /* yellow */
+  background-color: yellow; /* yellow */
 }
 
 
