@@ -33,7 +33,9 @@ const MainLayout = ({ children, onLogout, user }) => {
     <SelectedIngredientsProvider>
 
       {/* Fake status bar background for iOS */}
-      <div className="status-bar-fake" style={{ backgroundColor: "yellow", paddingTop: "20px" }}></div>
+      <div style={{ backgroundColor: "yellow", height: "40px", width: "100%" }}>
+        SAFE AREA TEST
+      </div>  
       
       {/* Pass togglers to HeaderBar */}
       <HeaderBar 
