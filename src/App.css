@@ -18,6 +18,7 @@ body {
   overflow-x: hidden;      /* prevent sideways scroll */
   overscroll-behavior-y: contain; /* prevent "bounce" on scroll up */
   -webkit-overflow-scrolling: auto; /* Stops iOS elastic scroll */
+
   padding-top: env(safe-area-inset-top);
   box-sizing: border-box;
   min-height: 100vh;
@@ -190,11 +191,9 @@ padding: 0;
   align-items: flex-end;
   box-sizing: border-box;
   position: fixed;
-  height: calc(60px + env(safe-area-inset-top)); /* add safe area */
-  padding-top: env(safe-area-inset-top);        /* push content below status bar */
   top: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: 50;
 }
 
 .HeaderWrap{
