@@ -330,7 +330,8 @@ align-items: center;
   width: 100vw;
   height: 100vh;
   background-color: yellow;
-  overflow-y: scroll;
+  overscroll-behavior: contain;   /* Prevents bounce on this element */
+  overflow: auto;                 /* Keeps inner scroll working */
 }
 
 .TopBar{
