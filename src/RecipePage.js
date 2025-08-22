@@ -5,18 +5,17 @@ import suggstionicon from './suggestion-white-icon.svg';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-// YouTube video container with styling
+// YouTube video container with clickable thumbnail
 function RecipeVideo({ recipeTitle }) {
   const [videoId, setVideoId] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+  const [thumbnail, setThumbnail] = useState(null);
 
   useEffect(() => {
     async function fetchRandomVideo() {
       try {
-        const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY; // Must be set in .env and in Netlify/Render env
-        if (!apiKey) {
-          console.warn("YouTube API key not set.");
-          return;
-        }
+        const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY;
+        if (!apiKey) return;
         const query = encodeURIComponent(`how to cook ${recipeTitle}`);
         const res = await fetch(
           `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${apiKey}&maxResults=5&type=video`
@@ -25,6 +24,7 @@ function RecipeVideo({ recipeTitle }) {
         if (data.items && data.items.length > 0) {
           const randomVideo = data.items[Math.floor(Math.random() * data.items.length)];
           setVideoId(randomVideo.id.videoId);
+          setThumbnail(randomVideo.snippet.thumbnails.medium.url);
         }
       } catch (err) {
         console.error("YouTube fetch error:", err);
@@ -37,34 +37,45 @@ function RecipeVideo({ recipeTitle }) {
 
   return (
     <div style={{
-      margin: '2.5rem auto',
+      margin: '1rem auto',
       width: '100%',
       maxWidth: '90vw',
-      background: '#fff8dc',
-      borderRadius: '12px',
+      background: 'transparent',
       padding: '1rem',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       boxSizing: 'border-box'
     }}>
-      <h2 style={{ marginBottom: '1rem', textAlign: 'center', color: '#444', fontSize:'18px' }}>
+      <h2 style={{ marginBottom: '1rem', marginTop: '0', textAlign: 'center', color: '#444', fontSize:'20px' }}>
         Watch how to cook {recipeTitle}
       </h2>
       <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
-        <iframe
-          src={`https://www.youtube.com/embed/${videoId}`}
-          title={`How to cook ${recipeTitle}`}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            border: '0',
-            borderRadius: '8px'
-          }}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
+        {!loaded && thumbnail && (
+          <img
+            src={thumbnail}
+            alt={`Thumbnail for ${recipeTitle}`}
+            style={{ 
+              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer', objectFit: 'cover'
+            }}
+            onClick={() => setLoaded(true)}
+          />
+        )}
+        {loaded && (
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}`}
+            title={`How to cook ${recipeTitle}`}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              border: '0',
+              borderRadius: '8px'
+            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+          ></iframe>
+        )}
       </div>
     </div>
   );
@@ -79,7 +90,6 @@ function RecipePage() {
   const [loading, setLoading] = useState(!initialRecipe);
   const [error, setError] = useState(null);
 
-  // Fetch recipe details if needed
   useEffect(() => {
     async function fetchRecipeDetails() {
       if (!initialRecipe || !initialRecipe.ingredients || !initialRecipe.instructions) {
@@ -121,7 +131,6 @@ function RecipePage() {
 
   return (
     <div className="IngredientPageWrap">
-      {/* Top bar */}
       <div className="TopBar">
         <div
           className="BackBtnIcon"
@@ -138,12 +147,10 @@ function RecipePage() {
         </div>
       </div>
 
-      {/* Main image */}
       <div className="IngredientImageBigContainer">
         <img src={recipe.image_url} alt={recipe.title} style={{ width: '100%', height: '100%' }} />
       </div>
 
-      {/* Recipe details */}
       <div className="IngredientValueDetailsContainer">
         <div className="TopGroup">
           <span className="IngredientName"><strong>{recipe.title}</strong></span>
@@ -154,7 +161,6 @@ function RecipePage() {
           </div>
         </div>
 
-        {/* Ingredients */}
         <div className="ValueTextContainer">
           <h3>Ingredients:</h3>
           <ol style={{ lineHeight: '1.5' }}>
@@ -171,17 +177,14 @@ function RecipePage() {
           </ol>
         </div>
 
-        {/* Instructions */}
         <div className="ValueTextContainer">
           <h3>Instructions:</h3>
           <p style={{ textAlign: 'justify', lineHeight: '1.5' }}>{instructionsText}</p>
         </div>
       </div>
 
-      {/* YouTube Video */}
       <RecipeVideo recipeTitle={recipe.title} />
 
-      {/* Bottom actions */}
       <div className="BottomGroupOne">
         <div className="BottomGroupTop">
           <div

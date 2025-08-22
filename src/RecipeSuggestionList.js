@@ -118,7 +118,7 @@ function RecipeSuggestionList() {
       .sort((a, b) => b.ratio - a.ratio);
 
   return (
-    <div className="Recipehome" style={{ top: '100px', paddingTop: "40px" }}>
+    <div className="Recipehome" style={{ top: '100px', paddingTop: "15px" }}>
       <div className='WhatsCookinText'>
         <h1 style={{ lineHeight: '0' }}>You Can Cook</h1>
       </div>
