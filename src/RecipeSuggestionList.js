@@ -104,7 +104,10 @@ function RecipeSuggestionList() {
         ratio: ingredientsList.length > 0 ? matchCount / ingredientsList.length : 0,
       };
     })
-    .sort((a, b) => b.ratio - a.ratio);
+     // FILTER OUT recipes with 0 matches
+      .filter(item => item.matchCount > 0)
+    // SORT BY RATIO
+      .sort((a, b) => b.ratio - a.ratio);
 
   return (
     <div className="Recipehome" style={{ top: '100px', paddingTop: "40px" }}>
