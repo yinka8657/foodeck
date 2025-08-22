@@ -17,8 +17,16 @@ function RecipeSuggestionList() {
 
   // Update recipe count
   useEffect(() => {
-    setRecipeCount(recipes.length);
-  }, [recipes, setRecipeCount]);
+    const filteredRecipes = recipes.filter(item => {
+      const ingredientsList = Array.isArray(item.ingredients) ? item.ingredients : [];
+      const matchCount = selectedIngredients.filter(selIng =>
+        ingredientsList.some(recipeIng => recipeIng.name.toLowerCase() === selIng.name.toLowerCase())
+      ).length;
+      return matchCount > 0;
+    });
+  
+    setRecipeCount(filteredRecipes.length);
+  }, [recipes, selectedIngredients, setRecipeCount]);
 
   // Fetch & cache suggestions
   useEffect(() => {
