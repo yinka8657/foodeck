@@ -432,7 +432,7 @@ align-items: center;
 
 .BottomGroupOne{
   padding: 8vw;
-  padding-top: 15vw;
+  padding-top: 0;
   padding-bottom: 15vw;
   box-sizing: border-box;
 }

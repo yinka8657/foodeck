@@ -5,16 +5,81 @@ import suggstionicon from './suggestion-white-icon.svg';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
+// YouTube video container with styling
+function RecipeVideo({ recipeTitle }) {
+  const [videoId, setVideoId] = useState(null);
+
+  useEffect(() => {
+    async function fetchRandomVideo() {
+      try {
+        const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY; // Must be set in .env and in Netlify/Render env
+        if (!apiKey) {
+          console.warn("YouTube API key not set.");
+          return;
+        }
+        const query = encodeURIComponent(`how to cook ${recipeTitle}`);
+        const res = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${apiKey}&maxResults=5&type=video`
+        );
+        const data = await res.json();
+        if (data.items && data.items.length > 0) {
+          const randomVideo = data.items[Math.floor(Math.random() * data.items.length)];
+          setVideoId(randomVideo.id.videoId);
+        }
+      } catch (err) {
+        console.error("YouTube fetch error:", err);
+      }
+    }
+    fetchRandomVideo();
+  }, [recipeTitle]);
+
+  if (!videoId) return null;
+
+  return (
+    <div style={{
+      margin: '2.5rem auto',
+      width: '100%',
+      maxWidth: '90vw',
+      background: '#fff8dc',
+      borderRadius: '12px',
+      padding: '1rem',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      boxSizing: 'border-box'
+    }}>
+      <h2 style={{ marginBottom: '1rem', textAlign: 'center', color: '#444', fontSize:'18px' }}>
+        Watch how to cook {recipeTitle}
+      </h2>
+      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
+        <iframe
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title={`How to cook ${recipeTitle}`}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            border: '0',
+            borderRadius: '8px'
+          }}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+    </div>
+  );
+}
+
 function RecipePage() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { recipe: initialRecipe, selectedIngredients } = state || {};
 
   const [recipe, setRecipe] = useState(initialRecipe || null);
-  const [loading, setLoading] = useState(!initialRecipe); // If no initial recipe, show loading
+  const [loading, setLoading] = useState(!initialRecipe);
   const [error, setError] = useState(null);
 
-  // Fetch full recipe details if we don't have ingredients or instructions
+  // Fetch recipe details if needed
   useEffect(() => {
     async function fetchRecipeDetails() {
       if (!initialRecipe || !initialRecipe.ingredients || !initialRecipe.instructions) {
@@ -39,30 +104,15 @@ function RecipePage() {
     fetchRecipeDetails();
   }, [initialRecipe]);
 
-  if (loading) {
-    return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading recipe details...</p>;
-  }
+  if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading recipe details...</p>;
+  if (error) return <p style={{ textAlign: 'center', marginTop: '2rem', color: 'red' }}>Error: {error}</p>;
+  if (!recipe) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>No recipe data found.</p>;
 
-  if (error) {
-    return <p style={{ textAlign: 'center', marginTop: '2rem', color: 'red' }}>Error: {error}</p>;
-  }
-
-  if (!recipe) {
-    return <p style={{ textAlign: 'center', marginTop: '2rem' }}>No recipe data found.</p>;
-  }
-
-  // Ensure selectedIngredients is always an array
   const safeSelectedIngredients = Array.isArray(selectedIngredients) ? selectedIngredients : [];
-
-  // Defensive: Map ingredients to get names (handle objects or strings)
   const ingredientsList = Array.isArray(recipe.ingredients)
     ? recipe.ingredients.map(ing => (typeof ing === 'string' ? ing : (ing.name || '')))
     : [];
-
-  // Defensive: Instructions fallback
   const instructionsText = recipe.instructions || 'No instructions available.';
-
-  // Count matched ingredients by comparing selectedIngredients names with recipe ingredients names
   const matchedCount = safeSelectedIngredients.length
     ? safeSelectedIngredients.filter(selIng =>
         ingredientsList.some(ing => ing.toLowerCase() === selIng.name.toLowerCase())
@@ -78,17 +128,13 @@ function RecipePage() {
           onClick={() => navigate(-1)}
           role="button"
           tabIndex={0}
-          onKeyPress={e => {
-            if (e.key === 'Enter' || e.key === ' ') navigate(-1);
-          }}
+          onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') navigate(-1); }}
         >
           <img src={backbutton} alt="back" style={{ width: '100%' }} />
         </div>
         <div className="ExpiryContainer">
           <span className="ExpiresText">Cooking Time:</span>
-          <span>
-            <strong>{recipe.time}</strong>
-          </span>
+          <span><strong>{recipe.time}</strong></span>
         </div>
       </div>
 
@@ -100,38 +146,23 @@ function RecipePage() {
       {/* Recipe details */}
       <div className="IngredientValueDetailsContainer">
         <div className="TopGroup">
-          <span className="IngredientName">
-            <strong>{recipe.title}</strong>
-          </span>
+          <span className="IngredientName"><strong>{recipe.title}</strong></span>
           <div className="RemoveBtnContainer">
             <div className="RecipeRating">
-              <span>
-                <strong>{matchedCount}</strong>
-              </span>
-              /<span>
-                <strong>{ingredientsList.length}</strong>
-              </span>
+              <span><strong>{matchedCount}</strong></span>/<span><strong>{ingredientsList.length}</strong></span>
             </div>
           </div>
         </div>
 
-        {/* Ingredients list */}
+        {/* Ingredients */}
         <div className="ValueTextContainer">
           <h3>Ingredients:</h3>
-          <ol style={{lineHeight:'1.5'}}>
+          <ol style={{ lineHeight: '1.5' }}>
             {ingredientsList.map((item, index) => {
-              const isAvailable = safeSelectedIngredients.some(
-                selIng => selIng.name.toLowerCase() === item.toLowerCase()
-              );
+              const isAvailable = safeSelectedIngredients.some(selIng => selIng.name.toLowerCase() === item.toLowerCase());
               return (
                 <li key={index}>
-                  <span
-                    className="Ingredient"
-                    style={{
-                      color: isAvailable ? '#DC143C' : 'black',
-                      fontWeight: isAvailable ? 'bold' : 'normal',
-                    }}
-                  >
+                  <span style={{ color: isAvailable ? '#DC143C' : 'black', fontWeight: isAvailable ? 'bold' : 'normal' }}>
                     {item}
                   </span>
                 </li>
@@ -143,54 +174,42 @@ function RecipePage() {
         {/* Instructions */}
         <div className="ValueTextContainer">
           <h3>Instructions:</h3>
-          <p style={{ textAlign: 'justify', textJustify: 'inter-word', lineHeight:'1.5' }}>{instructionsText}</p>
+          <p style={{ textAlign: 'justify', lineHeight: '1.5' }}>{instructionsText}</p>
         </div>
       </div>
+
+      {/* YouTube Video */}
+      <RecipeVideo recipeTitle={recipe.title} />
 
       {/* Bottom actions */}
       <div className="BottomGroupOne">
         <div className="BottomGroupTop">
-
-          {/* Suggestion button */}
           <div
             className="BottomBtn"
             onClick={() => navigate('/ingredient-to-recipe/suggestions')}
             style={{ cursor: 'pointer' }}
             role="button"
             tabIndex={0}
-            onKeyPress={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                navigate('/ingredient-to-recipe/suggestions');
-              }
-            }}
+            onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') navigate('/ingredient-to-recipe/suggestions'); }}
           >
             <div className="BtnIconContainer">
               <img src={suggstionicon} alt="suggestion" style={{ width: '100%' }} />
             </div>
-            <span>
-              <strong style={{ color: 'yellow' }}>Suggestion</strong>
-            </span>
+            <span><strong style={{ color: 'yellow' }}>Suggestion</strong></span>
           </div>
 
-          {/* Ingredient List button */}
           <div
             className="BottomBtn"
             onClick={() => navigate('/ingredient-to-recipe')}
             style={{ cursor: 'pointer' }}
             role="button"
             tabIndex={0}
-            onKeyPress={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                navigate('/ingredient-to-recipe');
-              }
-            }}
+            onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') navigate('/ingredient-to-recipe'); }}
           >
             <div className="BtnIconContainer">
               <img src={ingredientlisticon} alt="ingredients" style={{ width: '100%' }} />
             </div>
-            <span>
-              <strong style={{ color: 'yellow' }}>Ingredients</strong>
-            </span>
+            <span><strong style={{ color: 'yellow' }}>Ingredients</strong></span>
           </div>
         </div>
       </div>
