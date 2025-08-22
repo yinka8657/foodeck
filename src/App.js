@@ -9,6 +9,7 @@ import RecipeEditor from './RecipeEditor';
 import IngredientSelectorPage from './IngredientSelectorPage';
 import RecipeSuggestionPage from './RecipeSuggestionPage';
 import LogoPage from './LogoPage';
+import './App.css';
 
 // Layout
 import MainLayout from './MainLayout';
@@ -20,6 +21,8 @@ function App({ user, onLogout }) {
   const [isMobile, setIsMobile] = useState(true);
   const [showLogo, setShowLogo] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  //Conditional Rendering for Different Screens
 
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth <= 480);
@@ -36,6 +39,22 @@ function App({ user, onLogout }) {
 
     return () => window.removeEventListener('load', handleLoad);
   }, []);
+
+  //Pinch and Zoom prevent on iOS
+
+  useEffect(() => {
+    const handleTouch = (event) => {
+      if (event.touches.length > 1) {
+        event.preventDefault(); // prevent pinch
+      }
+    };
+    document.addEventListener("touchstart", handleTouch, { passive: false });
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouch);
+    };
+  }, []);
+
 
   const handleLogoFinish = () => setShowLogo(false);
 

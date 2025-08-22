@@ -8,7 +8,7 @@ const MyCarousel = ({ selectedIngredients = [] }) => {
   const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
-    fetch("${API_URL}/api/recipes")
+    fetch(`${API_URL}/api/recipes`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

@@ -76,7 +76,7 @@ function IngredientList() {
         <img src={search} alt="search" style={{ width: '8vw' }} />
       </div>
 
-      <div className={`SearchDisplayContainer ${showSearch && searchResults.length > 0 ? 'show' : ''}`}>
+      <div onTouchMove={(e) => e.stopPropagation()} className={`SearchDisplayContainer ${showSearch && searchResults.length > 0 ? 'show' : ''}`}>
         <ul className='SearchList' style={{ width: '100%', fontSize: '20px', fontWeight: '600' }}>
           {searchResults.length === 0 && query && (
             <li className='SearchResult'>No results</li>
@@ -95,7 +95,7 @@ function IngredientList() {
       <div className='RecipeListContainer'>
         <div className='RecipeListTopContainer'>
           <div className='RecipeItem'>
-            <ul className='ItemList'>
+            <ul className='ItemList .no-scrollbar'>
 
               {selectedIngredients.length === 0 && (
                 <li

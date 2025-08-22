@@ -48,7 +48,7 @@ function RecipeHome() {
   const secondPart = filteredSortedRecipes.slice(4);
 
   return (
-    <div className="Recipehome">
+    <div className="Recipehome ">
       <div className="Recipe-search-bar" style={{boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'}}>
         <img src={addrecipeicon} alt="addrecipeicon" style={{ width: "10vw" }} />
         <form onSubmit={(e) => e.preventDefault()} style={{ marginLeft: "10px", marginRight: "10px" }}>
@@ -68,8 +68,8 @@ function RecipeHome() {
           <h1 style={{ lineHeight: "0" }}>African Cuisines</h1>
         </div>
         <div className="RecipeListTopContainer">
-          <ul className="ItemList">
-            <div className="RecipeItem">
+          <ul className="ItemList ">
+            <div className="RecipeItem .no-scrollbar">
               {filteredSortedRecipes.length === 0 ? (
                 <p className="no-recipe-message" style={{ padding: "1rem", fontStyle: "italic", color: "#666" }}>
                   No recipes found

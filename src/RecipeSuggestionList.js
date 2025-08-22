@@ -114,7 +114,7 @@ function RecipeSuggestionList() {
       <div className="RecipeListContainer">
         <div className="RecipeListTopContainer">
           <ul className="ItemList">
-            <div className="RecipeItem">
+            <div className="RecipeItem .no-scrollbar">
               {sortedRecipes.map((item, index) => {
                 const ingredientsList = Array.isArray(item.ingredients) ? item.ingredients : [];
                 return (
