@@ -28,6 +28,28 @@ function RecipeSuggestionList() {
     setRecipeCount(filteredRecipes.length);
   }, [recipes, selectedIngredients, setRecipeCount]);
 
+  // Clean up old recipe suggestion cache entries (but keep selectedIngredients safe)
+  useEffect(() => {
+    const prefix = "recipeSuggestions_";
+    const maxEntries = 20; // keep last 20 queries
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
+
+    if (keys.length > maxEntries) {
+      const excess = keys.length - maxEntries;
+      keys
+        .sort((a, b) => {
+          const aTime = localStorage.getItem(a + "_time") || 0;
+          const bTime = localStorage.getItem(b + "_time") || 0;
+          return aTime - bTime;
+        })
+        .slice(0, excess)
+        .forEach(k => {
+          localStorage.removeItem(k);
+          localStorage.removeItem(k + "_time");
+        });
+    }
+  }, []);
+
   // Fetch & cache suggestions
   useEffect(() => {
     if (!selectedIngredients || selectedIngredients.length === 0) {
@@ -72,6 +94,7 @@ function RecipeSuggestionList() {
         setRecipes(recipesArray);
         setRecipeCount(recipesArray.length);
         localStorage.setItem(cacheKey, JSON.stringify(recipesArray));
+        localStorage.setItem(cacheKey + "_time", Date.now()); // track recency
       })
       .catch((error) => {
         console.error("Error fetching suggestions:", error);
@@ -112,10 +135,8 @@ function RecipeSuggestionList() {
         ratio: ingredientsList.length > 0 ? matchCount / ingredientsList.length : 0,
       };
     })
-     // FILTER OUT recipes with 0 matches
-      .filter(item => item.matchCount > 0)
-    // SORT BY RATIO
-      .sort((a, b) => b.ratio - a.ratio);
+    .filter(item => item.matchCount > 0) // FILTER OUT recipes with 0 matches
+    .sort((a, b) => b.ratio - a.ratio); // SORT BY RATIO
 
   return (
     <div className="Recipehome" style={{ top: '100px', paddingTop: "15px" }}>

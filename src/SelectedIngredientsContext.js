@@ -13,15 +13,30 @@ const normalizeNames = (arr) =>
     })
     .filter(Boolean);
 
+// ✅ Safe localStorage wrapper
+const safeSetItem = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.warn("⚠️ Storage quota exceeded, using memory fallback:", e);
+    window._memoryStore = window._memoryStore || {};
+    window._memoryStore[key] = value;
+  }
+};
+
+const safeGetItem = (key) => {
+  try {
+    const val = localStorage.getItem(key);
+    return val ? JSON.parse(val) : null;
+  } catch {
+    return window._memoryStore ? window._memoryStore[key] : null;
+  }
+};
+
 export const SelectedIngredientsProvider = ({ children }) => {
   const [selectedIngredients, setSelectedIngredients] = useState(() => {
-    try {
-      const saved = localStorage.getItem('selectedIngredients');
-      return saved ? JSON.parse(saved) : [];
-    } catch (err) {
-      console.error("Error parsing localStorage data:", err);
-      return [];
-    }
+    const saved = safeGetItem('selectedIngredients');
+    return saved || [];
   });
 
   const [recipeCount, setRecipeCount] = useState(0);
@@ -88,7 +103,7 @@ export const SelectedIngredientsProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('selectedIngredients', JSON.stringify(selectedIngredients));
+    safeSetItem('selectedIngredients', selectedIngredients); // ✅ safe write
     fetchRecipeCount(selectedIngredients);
   }, [selectedIngredients, fetchRecipeCount]);
 
