@@ -21,7 +21,7 @@ body {
 
   padding-top: env(safe-area-inset-top);
   box-sizing: border-box;
-  min-height: 100vh;
+  min-height: 100%;
 
 }
 
@@ -1016,6 +1016,41 @@ html, body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 10px;
 }
+
+.install-container{
+  background-color: yellow;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.InstallHeaderContainer{
+  position: relative;
+  padding: 20px; /* content padding */
+  background-image: 
+  linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), /* dark overlay */
+  url("coverimage.jpeg");
+  background-size: cover;   /* makes image cover */
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 40vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.HowToInstallTxt{
+  padding: 10px 25px;
+}
+
+:root {
+  --vh: 1vh; /* default fallback */
+}
+
+.FullHeight {
+  height: 100%;
+}
+
+
 
 
 

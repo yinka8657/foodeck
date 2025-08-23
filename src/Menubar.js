@@ -61,9 +61,15 @@ function MenuBar({ isOpen, onClose, onSignOut, user }) {
               <div className='SocialIcon'>
                 <img src={instagram} alt="social" style={{ width: '100%' }}/>
               </div>
-              <div className='SocialIcon'>
-                <img src={xicon} alt="social" style={{ width: '100%' }}/>
-              </div>
+              <a 
+                href="https://x.com/Afrifoody" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <div className="SocialIcon">
+                  <img src={xicon} alt="social" style={{ width: '100%' }} />
+                </div>
+              </a>
             </div>
           </div>
           

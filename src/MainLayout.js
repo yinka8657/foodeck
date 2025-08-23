@@ -4,8 +4,15 @@ import Nav from './Nav';
 import MenuBar from './Menubar'; // side menu component
 import Notification from './Notification'; // your notification pane
 import { SelectedIngredientsProvider } from './SelectedIngredientsContext'; // import your context provider
+import { useLocation } from "react-router-dom";
 
 const MainLayout = ({ children, onLogout, user }) => {
+  const location = useLocation();
+
+  // List of routes where Header/Nav should be hidden
+  const hideLayoutRoutes = ["/install"];
+  const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
 
@@ -33,15 +40,16 @@ const MainLayout = ({ children, onLogout, user }) => {
     <SelectedIngredientsProvider>
       
       {/* Pass togglers to HeaderBar */}
-      <HeaderBar 
+      
+      {!shouldHideLayout && <HeaderBar 
         onMenuToggle={toggleMenu} 
         onNotificationToggle={toggleNotification} 
-      />
+      />}
 
       {/* Render children directly (context provides state) */}
       {children}
 
-      <Nav />
+      {!shouldHideLayout && <Nav />}
 
       {/* MenuBar with sign out button */}
       {menuOpen && (

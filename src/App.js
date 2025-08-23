@@ -10,6 +10,8 @@ import IngredientSelectorPage from './IngredientSelectorPage';
 import RecipeSuggestionPage from './RecipeSuggestionPage';
 import LogoPage from './LogoPage';
 import './App.css';
+import InstallPage from "./InstallPage";
+
 
 // Layout
 import MainLayout from './MainLayout';
@@ -62,6 +64,22 @@ function App({ user, onLogout }) {
   if (!isMobile) return <div className="switch-message">Please switch to a mobile device for the best experience.</div>;
   if (showLogo) return <LogoPage onFinish={handleLogoFinish} />;
 
+  // Fix for inconsistent vh across devices
+  function setVh() {
+    document.documentElement.style.setProperty(
+      '--vh',
+      `${window.innerHeight * 0.01}px`
+    );
+  }
+
+  // Set on load
+  setVh();
+
+  // Update on resize/orientation change
+  window.addEventListener('resize', setVh);
+  window.addEventListener('orientationchange', setVh);
+
+
   return (
     <SelectedIngredientsProvider>
       <MainLayout user={user} onLogout={onLogout}>
@@ -72,6 +90,8 @@ function App({ user, onLogout }) {
           <Route path="/recipe" element={<RecipePage />} />
           <Route path="/ingredientPage" element={<IngredientPage />} />
           <Route path="/admin/new-recipe" element={<RecipeEditor />} />
+          {/* Other routes */}
+          <Route path="/install" element={<InstallPage style={{ width: '100%' }} />} />
         </Routes>
       </MainLayout>
     </SelectedIngredientsProvider>
