@@ -385,6 +385,7 @@ align-items: center;
 }
 .IngredientName{
   font-size: 24px;
+  margin-right: 15px;
 }
 
 .BottomGroup{
@@ -1002,6 +1003,18 @@ input, textarea, select {
 
 html, body {
   overscroll-behavior: none;
+}
+
+
+.SortButton{
+  position: fixed;
+  width: 40px;
+  right: 10px;
+}
+
+.SortButton img{
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
 }
 
 

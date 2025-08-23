@@ -44,7 +44,7 @@ function RecipeVideo({ recipeTitle }) {
       padding: '1rem',
       boxSizing: 'border-box'
     }}>
-      <h2 style={{ marginBottom: '1rem', marginTop: '0', textAlign: 'center', color: '#444', fontSize:'20px' }}>
+      <h2 style={{ marginBottom: '1rem', marginTop: '0', textAlign: 'center', color: 'black', fontSize:'20px' }}>
         Watch how to cook {recipeTitle}
       </h2>
       <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>

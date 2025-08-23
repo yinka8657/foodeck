@@ -2,6 +2,9 @@ import './App.css';
 import React, { useEffect, useState, useContext } from "react";
 import { Link } from 'react-router-dom';
 import { SelectedIngredientsContext } from './SelectedIngredientsContext';
+import sortbuttonbackward from './sort-back.svg';
+import sortbuttonforward from './sort-forward.svg';
+
 import API_URL from "./config"; // central config
 
 function RecipeSuggestionList() {
@@ -9,6 +12,7 @@ function RecipeSuggestionList() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+  const [sortDescending, setSortDescending] = useState(true); // <-- toggle state
 
   // Log selected ingredients
   useEffect(() => {
@@ -28,29 +32,7 @@ function RecipeSuggestionList() {
     setRecipeCount(filteredRecipes.length);
   }, [recipes, selectedIngredients, setRecipeCount]);
 
-  // Clean up old recipe suggestion cache entries (but keep selectedIngredients safe)
-  useEffect(() => {
-    const prefix = "recipeSuggestions_";
-    const maxEntries = 20; // keep last 20 queries
-    const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
-
-    if (keys.length > maxEntries) {
-      const excess = keys.length - maxEntries;
-      keys
-        .sort((a, b) => {
-          const aTime = localStorage.getItem(a + "_time") || 0;
-          const bTime = localStorage.getItem(b + "_time") || 0;
-          return aTime - bTime;
-        })
-        .slice(0, excess)
-        .forEach(k => {
-          localStorage.removeItem(k);
-          localStorage.removeItem(k + "_time");
-        });
-    }
-  }, []);
-
-  // Fetch & cache suggestions
+  // Fetch & cache suggestions (keeping your code intact)
   useEffect(() => {
     if (!selectedIngredients || selectedIngredients.length === 0) {
       setRecipes([]);
@@ -103,24 +85,7 @@ function RecipeSuggestionList() {
       .finally(() => setLoading(false));
   }, [selectedIngredients, setRecipeCount]);
 
-  // Render messages for empty, loading, or error states
-  if (!selectedIngredients || selectedIngredients.length === 0) {
-    return (
-      <p className="center-message" style={{
-        display: 'flex', justifyContent: 'center', alignItems: 'center',
-        height: '60vh', fontSize: '1.5rem', fontWeight: '600', color: '#666',
-        textAlign: 'center', padding: '0 1rem'
-      }}>
-        No Recipe Suggestion yet...<br />Add ingredients to see suggestions.
-      </p>
-    );
-  }
-
-  if (loading) return <p className="center-message">Loading suggestions...</p>;
-  if (fetchError) return <p className="center-message" style={{ color: 'red', padding: '1rem' }}>Failed to load suggestions: {fetchError}</p>;
-  if (recipes.length === 0) return <p className="center-message">No suggestions found.</p>;
-
-  // Sort recipes by match ratio
+  // --- Sort logic ---
   const sortedRecipes = [...recipes]
     .map((item) => {
       const ingredientsList = Array.isArray(item.ingredients) ? item.ingredients : [];
@@ -135,14 +100,50 @@ function RecipeSuggestionList() {
         ratio: ingredientsList.length > 0 ? matchCount / ingredientsList.length : 0,
       };
     })
-    .filter(item => item.matchCount > 0) // FILTER OUT recipes with 0 matches
-    .sort((a, b) => b.ratio - a.ratio); // SORT BY RATIO
+    .filter(item => item.matchCount > 0) // keep only recipes with matches
+    .sort((a, b) => {
+      // First sort by ratio
+      if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+      // Then by time (descending or ascending depending on toggle)
+      const timeA = parseInt(a.time) || 0;
+      const timeB = parseInt(b.time) || 0;
+      return sortDescending ? timeB - timeA : timeA - timeB;
+    });
+
+  // --- UI states ---
+  if (!selectedIngredients || selectedIngredients.length === 0) {
+    return (
+      <p className="center-message" style={{
+        display: 'flex', justifyContent: 'center', alignItems: 'center',
+        height: '60vh', fontSize: '1.5rem', fontWeight: '600', color: '#666',
+        textAlign: 'center', padding: '0 1rem'
+      }}>
+        No Recipe Suggestion yet...<br />Add ingredients to see suggestions.
+      </p>
+    );
+  }
+  if (loading) return <p className="center-message">Loading suggestions...</p>;
+  if (fetchError) return <p className="center-message" style={{ color: 'red', padding: '1rem' }}>Failed to load suggestions: {fetchError}</p>;
+  if (recipes.length === 0) return <p className="center-message">No suggestions found.</p>;
 
   return (
     <div className="Recipehome" style={{ top: '100px', paddingTop: "15px" }}>
+      {/* --- Sort Button --- */}
+      <div 
+        className='SortButton' 
+        onClick={() => setSortDescending(prev => !prev)}
+      >
+        <img 
+          src={sortDescending ? sortbuttonbackward : sortbuttonforward} 
+          alt="sort" 
+          style={{ width: '100%', height: '100%' }} 
+        />
+      </div>
+
       <div className='WhatsCookinText'>
         <h1 style={{ lineHeight: '0' }}>You Can Cook</h1>
       </div>
+
       <div className="RecipeListContainer">
         <div className="RecipeListTopContainer">
           <ul className="ItemList">
@@ -150,12 +151,17 @@ function RecipeSuggestionList() {
               {sortedRecipes.map((item, index) => {
                 const ingredientsList = Array.isArray(item.ingredients) ? item.ingredients : [];
                 return (
-                  <Link to="/recipe" state={{ recipe: item, selectedIngredients }} key={index} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <Link 
+                    to="/recipe" 
+                    state={{ recipe: item, selectedIngredients }} 
+                    key={index} 
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
                     <li className="RecipeItemDetails">
                       <div className="RecipeImageContainer">
                         <img src={item.image} alt="recipeImage" style={{ width: '100%', objectFit: 'cover', height: '100%' }} />
                       </div>
-                      <div className="RecipeInfoTextContainer" >
+                      <div className="RecipeInfoTextContainer">
                         <span className="RecipeTitle" style={{ lineHeight: '20px' }}><strong>{item.title}</strong></span><br />
                         <span className="RecipeValue"><strong>Value:</strong> {item.value}</span><br />
                         <span className="CookingTime"><strong>Time:</strong> {item.time}</span>
