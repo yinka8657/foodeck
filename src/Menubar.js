@@ -5,7 +5,7 @@ import avataricon from './avataricon.svg';
 import instagram from './instagram.svg';
 import solidcancel from './x-cancel-solid-icon.svg';
 import facebook from './facebook.svg';
-import tiktok from './tiktok.svg';
+import xicon from './x-icon.svg';
 
 function MenuBar({ isOpen, onClose, onSignOut, user }) {
   if (!isOpen) return null; // Don't render if menu is closed
@@ -62,7 +62,7 @@ function MenuBar({ isOpen, onClose, onSignOut, user }) {
                 <img src={instagram} alt="social" style={{ width: '100%' }}/>
               </div>
               <div className='SocialIcon'>
-                <img src={tiktok} alt="social" style={{ width: '100%' }}/>
+                <img src={xicon} alt="social" style={{ width: '100%' }}/>
               </div>
             </div>
           </div>
