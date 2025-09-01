@@ -64,7 +64,7 @@ function IngredientList() {
 
   return (
     <div className="Recipehome">
-      <div className='Recipe-search-bar' style={{boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'}}>
+      <div className='Recipe-search-bar'>
         <img src={addrecipeicon} alt="add recipe" style={{ width: '10vw' }} />
         <input
           type="text"

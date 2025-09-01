@@ -49,7 +49,7 @@ function RecipeHome() {
 
   return (
     <div className="Recipehome ">
-      <div className="Recipe-search-bar" style={{boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'}}>
+      <div className="Recipe-search-bar">
         <img src={addrecipeicon} alt="addrecipeicon" style={{ width: "10vw" }} />
         <form onSubmit={(e) => e.preventDefault()} style={{ marginLeft: "10px", marginRight: "10px" }}>
           <input

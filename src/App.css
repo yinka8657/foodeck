@@ -87,6 +87,8 @@ body {
 
 .NavIcon{
   position: relative;
+  width: fit-content;
+  margin: auto;
 }
 
 
@@ -157,7 +159,7 @@ body {
   box-sizing: border-box;
   height: 12vh;
   overflow: hidden;
-  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.2);
 }
 
 .RecipeImageContainer{
@@ -1048,6 +1050,14 @@ html, body {
 
 .FullHeight {
   height: 100%;
+}
+
+.Feedback{
+  margin-bottom: 5px;
+}
+
+.NavLabel{
+  font-size: 12px;
 }
 
 

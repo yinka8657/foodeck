@@ -2,12 +2,20 @@ import React from 'react';
 import './App.css';
 import signouticon from './signouticon.svg';
 import avataricon from './avataricon.svg';
-import instagram from './instagram.svg';
 import solidcancel from './x-cancel-solid-icon.svg';
-import facebook from './facebook.svg';
 import xicon from './x-icon.svg';
+import sendmail from './send-mail.svg';
+import feedback from './feedback.svg';
+
+import { useState } from 'react';
+
+
 
 function MenuBar({ isOpen, onClose, onSignOut, user }) {
+
+  const [clickedOnce, setClickedOnce] = useState(false);
+
+
   if (!isOpen) return null; // Don't render if menu is closed
 
   // Close menu if user clicks outside the container (on overlay)
@@ -16,6 +24,18 @@ function MenuBar({ isOpen, onClose, onSignOut, user }) {
       onClose();
     }
   };
+
+  
+    const handleClick = () => {
+      if (!clickedOnce) {
+        // first click → change image
+        setClickedOnce(true);
+      } else {
+        // second click → open mail client
+        window.location.href = "mailto:afrifoody@gmail.com?subject=Feedback&body=Hi Afrifoody team,";
+        setClickedOnce(false); // reset if you want to allow repeat
+      }
+    }
 
   return (
     <div className="MenuBarOverlay" onClick={handleOverlayClick}>
@@ -50,17 +70,19 @@ function MenuBar({ isOpen, onClose, onSignOut, user }) {
          
           
 
+          <div className="Feedback" onClick={handleClick}>
+            <img
+              src={clickedOnce ? sendmail : feedback}
+              alt="feedback"
+              style={{ width: "100%", cursor: "pointer" }}
+            />
+          </div>
 
           <div className='SocialsWrap'>
            <h4 style={{ textAlign: 'center', lineHeight:'0' }}>Official Socials:</h4>
             {/*Official Socials*/}
             <div className='SocialsContainer' style={{ margin: '0 auto' }}>
-              <div className='SocialIcon'>
-                <img src={facebook} alt="social" style={{ width: '100%' }}/>
-              </div>
-              <div className='SocialIcon'>
-                <img src={instagram} alt="social" style={{ width: '100%' }}/>
-              </div>
+
               <a 
                 href="https://x.com/Afrifoody" 
                 target="_blank" 
@@ -72,6 +94,7 @@ function MenuBar({ isOpen, onClose, onSignOut, user }) {
               </a>
             </div>
           </div>
+          
           
           
           

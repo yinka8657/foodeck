@@ -29,6 +29,11 @@ function Nav() {
               <img src={inglist} alt="ingredientlist" style={{ width: '8vw' }} />
             )}
           </div>
+          <span className='NavLabel'
+            style={{
+              backgroundColor: path === '/ingredient-to-recipe' ? 'yellow' : 'transparent'
+            }}
+          >Ingredients</span> 
         </Link>
 
         <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -39,6 +44,11 @@ function Nav() {
               <img src={addrecipe} alt="addrecipe" style={{ width: '8vw' }} />
             )}
           </div>
+          <span className='NavLabel'
+            style={{
+              backgroundColor: path === '/' ? 'yellow' : 'transparent'
+            }}
+          >Home</span>
         </Link>
 
         <Link to="/ingredient-to-recipe/suggestions" style={{ textDecoration: 'none', color: 'inherit' }}>
@@ -52,6 +62,11 @@ function Nav() {
               <img src={suggestlist} alt="suggestionlist" style={{ width: '8vw' }} />
             )}
           </div>
+          <span className='NavLabel'
+            style={{
+              backgroundColor: path === '/ingredient-to-recipe/suggestions' ? 'yellow' : 'transparent'
+            }}
+          >suggestions</span>
         </Link>
 
       </div>
