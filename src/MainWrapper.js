@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import SignUpLogin from "./SignUpLogin";
 import App from "./App";
-import { supabase } from "./supabaseClient"; // make sure you have this
+import { supabase } from "./supabaseClient"; // ✅ supabase client with persistSession
 
 export default function MainWrapper() {
   const [user, setUser] = useState(null);
 
+  // ✅ Initialize user on first load
   useEffect(() => {
     const initUser = async () => {
+      // try localStorage first
       const savedUser = localStorage.getItem("user");
       if (savedUser) {
         try {
@@ -22,16 +24,16 @@ export default function MainWrapper() {
         }
       }
 
-      // fallback: fetch from Supabase directly
+      // fallback: fetch from Supabase session
       const {
-        data: { user },
+        data: { session },
         error,
-      } = await supabase.auth.getUser();
+      } = await supabase.auth.getSession();
 
-      if (user && !error) {
-        setUser(user);
-        localStorage.setItem("user", JSON.stringify(user));
-        console.log("✅ Synced user from Supabase:", user);
+      if (session?.user && !error) {
+        setUser(session.user);
+        localStorage.setItem("user", JSON.stringify(session.user));
+        console.log("✅ Synced user from Supabase:", session.user);
       } else {
         setUser(null);
         localStorage.removeItem("user");
@@ -42,24 +44,46 @@ export default function MainWrapper() {
     initUser();
   }, []);
 
-  const handleLogin = async (userData) => {
-    // always fetch fresh user after login
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
+  // ✅ Keep app in sync with Supabase auth events
+  useEffect(() => {
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser(session.user);
+          localStorage.setItem("user", JSON.stringify(session.user));
+          console.log(`🔄 Auth event: ${event}, user updated`);
+        } else {
+          setUser(null);
+          localStorage.removeItem("user");
+          console.log(`🔄 Auth event: ${event}, user cleared`);
+        }
+      }
+    );
 
-    if (!error && user) {
-      setUser(user);
-      localStorage.setItem("user", JSON.stringify(user));
-      console.log("✅ User logged in:", user);
+    return () => {
+      subscription.subscription.unsubscribe();
+    };
+  }, []);
+
+  // ✅ Called after login success
+  const handleLogin = async () => {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (session?.user && !error) {
+      setUser(session.user);
+      localStorage.setItem("user", JSON.stringify(session.user));
+      console.log("✅ User logged in:", session.user);
     } else {
       console.error("❌ Login error:", error);
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("authToken");
+  // ✅ Logout handler
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem("user");
     setUser(null);
     console.log("👋 User logged out");

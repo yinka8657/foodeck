@@ -185,7 +185,7 @@ function RecipePage({user}) {
 
         <div className="ValueTextContainer">
           <h3>Instructions:</h3>
-          <p style={{ textAlign: 'justify', lineHeight: '1.5' }}>{instructionsText}</p>
+          <p style={{ textAlign: 'justify', lineHeight: '1.5', textJustify:'inter-word', hyphens:'auto' }}>{instructionsText}</p>
         </div>
       </div>
               

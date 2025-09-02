@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import logo from "./logo.svg";
+import { supabase } from "./supabaseClient"; // ✅ Make sure this imports your supabaseClient.js
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -148,18 +149,18 @@ export default function SignUpLogin({ onLogin }) {
       }
       try {
         setLoading(true);
-        const res = await fetch(`${API_URL}/api/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, username, password }),
+        // ✅ Supabase sign-up
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { username } },
         });
-        const data = await res.json();
-        if (!res.ok) return setError(data.error || "Registration failed");
-        setSuccess("Registration successful! Confirm Email & Log in.");
+        if (error) throw error;
+        setSuccess("Registration successful! Confirm your email before login.");
         setIsSignUp(false);
         setForm({ email, username: "", password: "", confirmPassword: "" });
-      } catch {
-        setError("Network error, please try again.");
+      } catch (err) {
+        setError(err.message || "Registration failed.");
       } finally {
         setLoading(false);
       }
@@ -170,28 +171,29 @@ export default function SignUpLogin({ onLogin }) {
       }
       try {
         setLoading(true);
-        const res = await fetch(`${API_URL}/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+        // ✅ Supabase login
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        const data = await res.json();
-        if (!res.ok) return setError(data.error || "Login failed");
-        setSuccess("Login successful!");
+        if (error) throw error;
 
-        // ✅ Always include the Supabase user.id
+        console.log("✅ Login successful:", data);
+
+        // ✅ Persist session & user
+        localStorage.setItem("session", JSON.stringify(data.session));
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         const userData = {
-          id: data.user?.id,             // the UUID from Supabase
+          id: data.user?.id,
           email: data.user?.email || email,
           username: data.user?.user_metadata?.username || "",
         };
 
-        localStorage.setItem("authToken", data.token || "");
-        localStorage.setItem("user", JSON.stringify(userData));
-
+        setSuccess("Login successful!");
         onLogin?.(userData);
-      } catch {
-        setError("Network error, please try again.");
+      } catch (err) {
+        setError(err.message || "Login failed.");
       } finally {
         setLoading(false);
       }
