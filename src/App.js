@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import ReactGA from "react-ga4";
 
 // Pages
 import RecipeHome from './RecipeHome';
@@ -11,6 +12,7 @@ import RecipeSuggestionPage from './RecipeSuggestionPage';
 import LogoPage from './LogoPage';
 import './App.css';
 import InstallPage from "./InstallPage";
+import AnalyticsTracker from "./AnalyticsTracker";
 
 
 // Layout
@@ -23,6 +25,14 @@ function App({ user, onLogout }) {
   const [isMobile, setIsMobile] = useState(true);
   const [showLogo, setShowLogo] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
+
+
+  // React GA4
+
+  useEffect(() => {
+    ReactGA.initialize("G-DN29GHT6MT"); // replace with your GA4 Measurement ID
+    ReactGA.send("pageview"); // track initial pageview
+  }, []);
 
   //Conditional Rendering for Different Screens
 
@@ -83,11 +93,15 @@ function App({ user, onLogout }) {
   return (
     <SelectedIngredientsProvider>
       <MainLayout user={user} onLogout={onLogout}>
+
+         {/* Analytics tracker sits here so it runs on every route change */}
+         <AnalyticsTracker /> 
+
         <Routes>
           <Route path="/" element={<RecipeHome />} />
           <Route path="/ingredient-to-recipe" element={<IngredientSelectorPage />} />
           <Route path="/ingredient-to-recipe/suggestions" element={<RecipeSuggestionPage />} />
-          <Route path="/recipe" element={<RecipePage />} />
+          <Route path="/recipe" element={<RecipePage user={user} />} />
           <Route path="/ingredientPage" element={<IngredientPage />} />
           <Route path="/admin/new-recipe" element={<RecipeEditor />} />
           {/* Other routes */}

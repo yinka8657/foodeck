@@ -4,12 +4,16 @@ import ingredientlisticon from './ingredient-list-white-icon.svg';
 import suggstionicon from './suggestion-white-icon.svg';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import RatingStars from './RatingStars.js';
+
 
 // YouTube video container with clickable thumbnail
 function RecipeVideo({ recipeTitle }) {
   const [videoId, setVideoId] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [thumbnail, setThumbnail] = useState(null);
+
+  
 
   useEffect(() => {
     async function fetchRandomVideo() {
@@ -81,7 +85,8 @@ function RecipeVideo({ recipeTitle }) {
   );
 }
 
-function RecipePage() {
+function RecipePage({user}) {
+  console.log("RecipePage user:", user);
   const navigate = useNavigate();
   const { state } = useLocation();
   const { recipe: initialRecipe, selectedIngredients } = state || {};
@@ -89,6 +94,7 @@ function RecipePage() {
   const [recipe, setRecipe] = useState(initialRecipe || null);
   const [loading, setLoading] = useState(!initialRecipe);
   const [error, setError] = useState(null);
+
 
   useEffect(() => {
     async function fetchRecipeDetails() {
@@ -182,6 +188,13 @@ function RecipePage() {
           <p style={{ textAlign: 'justify', lineHeight: '1.5' }}>{instructionsText}</p>
         </div>
       </div>
+              
+                {user ? (
+                
+            <RatingStars recipeId={recipe.id} user={user} recipe={recipe} />
+          ) : (
+            <p style={{ textAlign: "center" }}>Log in to rate this recipe.</p>
+          )}
 
       <RecipeVideo recipeTitle={recipe.title} />
 

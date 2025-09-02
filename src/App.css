@@ -1060,6 +1060,12 @@ html, body {
   font-size: 12px;
 }
 
+.RatingContainer{
+  display: flex;
+  width: fit-content;
+  margin: 30px auto;
+  gap: 10px;
+}
 
 
 
