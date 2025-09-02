@@ -76,7 +76,7 @@ function RatingStars({ recipeId, user, recipe }) {
   if (!recipe?.id) return null;
 
   return (
-    <div className="RatingContainer" style={{ display: "flex", gap: 8 }}>
+    <div className="RatingContainer" style={{ display: "flex", gap: 10 }}>
       {[...Array(5)].map((_, index) => (
         <button
           key={index}
@@ -94,7 +94,7 @@ function RatingStars({ recipeId, user, recipe }) {
           <img
             src={index < rating ? solidstar : star}
             alt={`rating-${index + 1}`}
-            style={{ width: 28, height: 28, display: "block" }}
+            style={{ width: 40, height: 40, display: "block" }}
           />
         </button>
       ))}

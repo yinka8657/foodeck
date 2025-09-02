@@ -6,8 +6,8 @@ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 const styles = {
   outerContainer: {
     width: "100%",
-    height: "100dvh", // full dynamic viewport height
-    overflow: "hidden", // prevent body scroll
+    height: "100dvh",
+    overflow: "hidden",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -15,7 +15,7 @@ const styles = {
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
   },
   scrollableInner: {
-    maxHeight: "90dvh", // allow inner scrolling if needed
+    maxHeight: "90dvh",
     overflowY: "auto",
     width: "100%",
     maxWidth: "420px",
@@ -105,7 +105,6 @@ export default function SignUpLogin({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // prevent elastic scroll on iOS / mobile
     const preventElasticScroll = (e) => e.preventDefault();
     document.body.style.overflow = "hidden";
     document.body.style.height = "100%";
@@ -125,7 +124,8 @@ export default function SignUpLogin({ onLogin }) {
     setForm({ email: "", username: "", password: "", confirmPassword: "" });
   };
 
-  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const handleChange = (e) =>
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -178,9 +178,17 @@ export default function SignUpLogin({ onLogin }) {
         const data = await res.json();
         if (!res.ok) return setError(data.error || "Login failed");
         setSuccess("Login successful!");
+
+        // ✅ Always include the Supabase user.id
+        const userData = {
+          id: data.user?.id,             // the UUID from Supabase
+          email: data.user?.email || email,
+          username: data.user?.user_metadata?.username || "",
+        };
+
         localStorage.setItem("authToken", data.token || "");
-        const userData = data.user || { email };
         localStorage.setItem("user", JSON.stringify(userData));
+
         onLogin?.(userData);
       } catch {
         setError("Network error, please try again.");
