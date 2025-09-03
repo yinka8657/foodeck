@@ -99,8 +99,8 @@ function App({ user, onLogout }) {
 
         <Routes>
           <Route path="/" element={<RecipeHome />} />
-          <Route path="/ingredient-to-recipe" element={<IngredientSelectorPage />} />
-          <Route path="/ingredient-to-recipe/suggestions" element={<RecipeSuggestionPage />} />
+          <Route path="/ingredient-to-recipe" element={<IngredientSelectorPage  />} />
+          <Route path="/ingredient-to-recipe/suggestions" element={<RecipeSuggestionPage  />} />
           <Route path="/recipe" element={<RecipePage user={user} />} />
           <Route path="/ingredientPage" element={<IngredientPage />} />
           <Route path="/admin/new-recipe" element={<RecipeEditor />} />

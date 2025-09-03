@@ -4,7 +4,7 @@ import notifybell from './notifybell.svg';
 import logo from './logo.svg';
 import { useLocation } from 'react-router-dom';
 
-function HeaderBar({ onMenuToggle, onNotificationToggle }) {
+function HeaderBar({ onMenuToggle, onNotificationToggle, style }) {
   const location = useLocation();
 
   // Hide elements on specific paths
@@ -27,7 +27,7 @@ function HeaderBar({ onMenuToggle, onNotificationToggle }) {
   };
 
   return (
-    <div className="HeaderContainer">
+    <div className="HeaderContainer" style={style}>
       <div className="HeaderWrap">
         {!hideHeaderElements && (
           <>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HeaderBar from './HeaderBar';
 import Nav from './Nav';
 import MenuBar from './Menubar'; // side menu component
@@ -9,8 +9,25 @@ import { useLocation } from "react-router-dom";
 const MainLayout = ({ children, onLogout, user }) => {
   const location = useLocation();
 
+//Show/Hide SearchBar + HeaderBar
+  const [showTopBar, setShowTopBar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > lastScrollY && window.scrollY > 70) {
+        setShowTopBar(false); // scrolling down → hide
+      } else {
+        setShowTopBar(true); // scrolling up → show
+      }
+      setLastScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
   // List of routes where Header/Nav should be hidden
-  const hideLayoutRoutes = ["/install"];
+  const hideLayoutRoutes = ["/install", "/recipe"];
   const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,14 +60,20 @@ const MainLayout = ({ children, onLogout, user }) => {
       
       {!shouldHideLayout && <HeaderBar 
         onMenuToggle={toggleMenu} 
-        onNotificationToggle={toggleNotification} 
+        onNotificationToggle={toggleNotification}
+        style={{transition: "transform 0.3s ease", transform: showTopBar ? "translateY(0)" : "translateY(-100%)"}}
       />}
 
       {/* Render children directly (context provides state) */}
-      {children}
+      {/* Pass scroll state to children */}
+      {React.Children.map(children, child =>
+        React.cloneElement(child, { showTopBar })
+      )}
+
 
       {!shouldHideLayout && <Nav />}
 
+       
       {/* MenuBar with sign out button */}
       {menuOpen && (
         <MenuBar

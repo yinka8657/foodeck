@@ -93,7 +93,7 @@ body {
 
 
 .Recipe-search-bar {
-  position: fixed;
+  position: relative;
   top: 100px;
   left: 50%;
   transform: translateX(-50%);
@@ -106,7 +106,7 @@ body {
   background-color: white;
   border-bottom: solid 1px rgb(210, 210, 210);
   box-sizing: border-box;
-  z-index: 1000;
+  z-index: 10;
 }
 
 .Recipe-search-bar input {
@@ -135,10 +135,10 @@ body {
 
 .Recipehome{
   position: relative;
-  max-width: 1000px;  /* or 90vw */
+  max-width: 1000px;
   margin: 0 auto;
   padding: 10px;
-  top: 170px;
+  top: 0; /* adjusted for sticky header offset in JS */
   overflow-x: hidden;
   box-sizing: border-box;
   
@@ -202,7 +202,7 @@ padding: 0;
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 50;
+  z-index: 1500;
 }
 
 .HeaderWrap{
@@ -747,14 +747,6 @@ align-items: center;
   
 }
 
-.MenuBarOverlay{
-  position: fixed;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgb(0, 0, 0, 0.9);
-  z-index: 120;
-}
-
 .MenuTopGroup{
   display: flex;
   justify-content: space-between;
@@ -810,19 +802,16 @@ align-items: center;
 
 
 .SearchDisplayContainer{
-  width:100vw;
-  background-color: yellow;
-  height: fit-content;
-  position: fixed;
-  text-align: center;
-  padding: 0;
-  margin: auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-  overflow-y: auto;       /* enable scrolling for children */
-  -webkit-overflow-scrolling: touch; /* smooth scroll on iOS */
+  max-height: 50vh;
+  overflow-y: auto;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 999;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
 }
 
 .SearchDisplayContainer ul{
@@ -920,7 +909,7 @@ align-items: center;
   width: 100vw;
   height: 100vh;
   background-color: rgba(0,0,0,0.5);
-  z-index: 1000;
+  z-index: 2000;
   display: flex;
   justify-content: flex-start; /* menu sticks left */
   align-items: stretch;
@@ -1008,8 +997,6 @@ input, textarea, select {
 }
 
 .no-scrollbar::-webkit-scrollbar {
-  width: 0;
-  height: 0;
   display: none;              /* Chrome, Safari, Edge */
 }
 
@@ -1191,7 +1178,15 @@ html, body {
   object-fit: cover;
 }
 
-
+/* Recipe search bar fixed → sticky */
+.Recipe-search-bar-wrapper {
+  position: sticky;
+  top: var(--top-offset, 80px); /* dynamically controlled by React */
+  z-index: 1000;
+  background-color: white;
+  padding-bottom: 0.5rem;
+  transition: transform 0.3s ease;
+}
 
 
 

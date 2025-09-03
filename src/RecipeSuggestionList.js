@@ -122,10 +122,21 @@ function RecipeSuggestionList() {
     })
     .filter(item => item.matchCount > 0)
     .sort((a, b) => {
+      // 1. Sort by ratio (primary)
       if (b.ratio !== a.ratio) return b.ratio - a.ratio;
+
+      // 2. If tie, sort by average rating
+      const ratingA = ratings[a.id]?.average || 0;
+      const ratingB = ratings[b.id]?.average || 0;
+      if (ratingB !== ratingA) return ratingB - ratingA;
+
+      // 3. If tie, sort by cooking time (depending on sortDescending)
       const timeA = parseInt(a.time) || 0;
       const timeB = parseInt(b.time) || 0;
-      return sortDescending ? timeB - timeA : timeA - timeB;
+      if (timeA !== timeB) return sortDescending ? timeB - timeA : timeA - timeB;
+
+      // 4. Final fallback: alphabetical
+      return a.title.localeCompare(b.title);
     });
 
   // --- UI states ---
