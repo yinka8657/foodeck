@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { SelectedIngredientsContext } from './SelectedIngredientsContext';
 import sortbuttonbackward from './sort-back.svg';
 import sortbuttonforward from './sort-forward.svg';
+import solidstar from "./star-solid.svg";
 
 import API_URL from "./config"; // central config
 
@@ -12,7 +13,8 @@ function RecipeSuggestionList() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
-  const [sortDescending, setSortDescending] = useState(true); // <-- toggle state
+  const [sortDescending, setSortDescending] = useState(true); 
+  const [ratings, setRatings] = useState({}); // store { recipeId: { average, count } }
 
   // Log selected ingredients
   useEffect(() => {
@@ -32,7 +34,7 @@ function RecipeSuggestionList() {
     setRecipeCount(filteredRecipes.length);
   }, [recipes, selectedIngredients, setRecipeCount]);
 
-  // Fetch & cache suggestions (keeping your code intact)
+  // Fetch & cache suggestions
   useEffect(() => {
     if (!selectedIngredients || selectedIngredients.length === 0) {
       setRecipes([]);
@@ -76,7 +78,7 @@ function RecipeSuggestionList() {
         setRecipes(recipesArray);
         setRecipeCount(recipesArray.length);
         localStorage.setItem(cacheKey, JSON.stringify(recipesArray));
-        localStorage.setItem(cacheKey + "_time", Date.now()); // track recency
+        localStorage.setItem(cacheKey + "_time", Date.now());
       })
       .catch((error) => {
         console.error("Error fetching suggestions:", error);
@@ -84,6 +86,24 @@ function RecipeSuggestionList() {
       })
       .finally(() => setLoading(false));
   }, [selectedIngredients, setRecipeCount]);
+
+  // Fetch average ratings for all recipes (batch)
+  useEffect(() => {
+    async function fetchRatings() {
+      if (!recipes.length) return;
+      try {
+        const ids = recipes.map(r => r.id).join(",");
+        const res = await fetch(`${API_URL}/api/recipes/ratings/average?ids=${ids}`);
+        if (!res.ok) throw new Error("Failed to fetch averages");
+        const data = await res.json();
+        setRatings(data); // { recipeId: { average, count } }
+      } catch (err) {
+        console.error("Error fetching averages:", err);
+      }
+    }
+
+    fetchRatings();
+  }, [recipes]);
 
   // --- Sort logic ---
   const sortedRecipes = [...recipes]
@@ -100,11 +120,9 @@ function RecipeSuggestionList() {
         ratio: ingredientsList.length > 0 ? matchCount / ingredientsList.length : 0,
       };
     })
-    .filter(item => item.matchCount > 0) // keep only recipes with matches
+    .filter(item => item.matchCount > 0)
     .sort((a, b) => {
-      // First sort by ratio
       if (b.ratio !== a.ratio) return b.ratio - a.ratio;
-      // Then by time (descending or ascending depending on toggle)
       const timeA = parseInt(a.time) || 0;
       const timeB = parseInt(b.time) || 0;
       return sortDescending ? timeB - timeA : timeA - timeB;
@@ -150,6 +168,8 @@ function RecipeSuggestionList() {
             <div className="RecipeItem .no-scrollbar">
               {sortedRecipes.map((item, index) => {
                 const ingredientsList = Array.isArray(item.ingredients) ? item.ingredients : [];
+                const ratingInfo = ratings[item.id] || { average: 0, count: 0 };
+
                 return (
                   <Link 
                     to="/recipe" 
@@ -167,8 +187,16 @@ function RecipeSuggestionList() {
                         <span className="CookingTime"><strong>Time:</strong> {item.time}</span>
                       </div>
                       <div className="InfoIconContainer" style={{ display: 'block' }}>
-                        <div className="RecipeRating">
+                        <div className="RecipeRating" style={{width:"fit-content", fontSize: "12px", padding:"5px"}}>
                           <span><strong>{item.matchCount}</strong></span>/<span><strong>{ingredientsList.length}</strong></span>
+                        </div>
+                        <div className='Rating' style={{width: "100%", margin:"5px auto 0 auto", paddingTop:"2px", borderTop:"1px black solid", display:"flex"}}>
+                          <img
+                            src={solidstar}
+                            alt={`rating-${index + 1}`}
+                            style={{ width: "15px", display: "block" }} 
+                          />
+                          <span>{ratingInfo.average.toFixed(1)}</span>
                         </div>
                       </div>
                     </li>
