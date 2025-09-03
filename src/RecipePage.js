@@ -7,41 +7,92 @@ import { useState, useEffect } from 'react';
 import RatingStars from './RatingStars.js';
 
 
-// YouTube video container with clickable thumbnail
-function RecipeVideo({ recipeTitle }) {
-  const [videoId, setVideoId] = useState(null);
-  const [loaded, setLoaded] = useState(false);
-  const [thumbnail, setThumbnail] = useState(null);
+const localVideos = [
+  {
+    id: "local1",
+    title: "How to cook Jollof Rice",
+    url: "https://www.youtube.com/embed/1c5hHY2q6eU",
+    thumbnail: "https://img.youtube.com/vi/1c5hHY2q6eU/mqdefault.jpg",
+  },
+  {
+    id: "local2",
+    title: "How to cook Egusi Soup",
+    url: "https://www.youtube.com/embed/04ZkR04D9j0",
+    thumbnail: "https://img.youtube.com/vi/04ZkR04D9j0/mqdefault.jpg",
+  },
+  {
+    id: "local3",
+    title: "How to cook Fried Plantain",
+    url: "https://www.youtube.com/embed/k_bfXkzXwg0",
+    thumbnail: "https://img.youtube.com/vi/k_bfXkzXwg0/mqdefault.jpg",
+  },
+];
 
-  
+// Video container with YouTube, Dailymotion, and Local fallback
+function RecipeVideo({ recipeTitle }) {
+  const [videoSrc, setVideoSrc] = useState(null);
+  const [thumbnail, setThumbnail] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+
+  // Local fallback videos
+ 
 
   useEffect(() => {
-    async function fetchRandomVideo() {
+    async function fetchVideo() {
       try {
         const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY;
-        if (!apiKey) return;
         const query = encodeURIComponent(`how to cook ${recipeTitle}`);
-        const res = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${apiKey}&maxResults=5&type=video`
-        );
-        const data = await res.json();
-        if (data.items && data.items.length > 0) {
-          const randomVideo = data.items[Math.floor(Math.random() * data.items.length)];
-          setVideoId(randomVideo.id.videoId);
-          setThumbnail(randomVideo.snippet.thumbnails.medium.url);
+
+        if (apiKey) {
+          // Try YouTube first
+          const res = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${apiKey}&maxResults=5&type=video`
+          );
+          const data = await res.json();
+
+          if (data.items && data.items.length > 0) {
+            const randomVideo = data.items[Math.floor(Math.random() * data.items.length)];
+            setVideoSrc(`https://www.youtube.com/embed/${randomVideo.id.videoId}`);
+            setThumbnail(randomVideo.snippet.thumbnails.medium.url);
+            return;
+          }
         }
+
+        // If YouTube fails, try Dailymotion
+        console.log("⚠️ YouTube failed, trying Dailymotion...");
+        const dmRes = await fetch(
+          `https://api.dailymotion.com/videos?search=${query}&limit=5&fields=id,thumbnail_720_url,title`
+        );
+        const dmData = await dmRes.json();
+
+        if (dmData.list && dmData.list.length > 0) {
+          const randomVideo = dmData.list[Math.floor(Math.random() * dmData.list.length)];
+          setVideoSrc(`https://www.dailymotion.com/embed/video/${randomVideo.id}`);
+          setThumbnail(randomVideo.thumbnail_720_url);
+          return;
+        }
+
+        // If Dailymotion fails, use local
+        console.log("⚠️ Dailymotion failed, using local fallback...");
+        const randomLocal = localVideos[Math.floor(Math.random() * localVideos.length)];
+        setVideoSrc(randomLocal.url);
+        setThumbnail(randomLocal.thumbnail);
       } catch (err) {
-        console.error("YouTube fetch error:", err);
+        console.error("Video fetch error:", err);
+        const randomLocal = localVideos[Math.floor(Math.random() * localVideos.length)];
+        setVideoSrc(randomLocal.url);
+        setThumbnail(randomLocal.thumbnail);
       }
     }
-    fetchRandomVideo();
+
+    fetchVideo();
   }, [recipeTitle]);
 
-  if (!videoId) return null;
+  if (!videoSrc) return null;
 
   return (
     <div style={{
-      margin: '1rem auto',
+      margin: '1rem auto 3em auto',
       width: '100%',
       maxWidth: '90vw',
       background: 'transparent',
@@ -64,7 +115,7 @@ function RecipeVideo({ recipeTitle }) {
         )}
         {loaded && (
           <iframe
-            src={`https://www.youtube.com/embed/${videoId}`}
+            src={videoSrc}
             title={`How to cook ${recipeTitle}`}
             style={{
               position: 'absolute',
@@ -94,7 +145,6 @@ function RecipePage({user}) {
   const [recipe, setRecipe] = useState(initialRecipe || null);
   const [loading, setLoading] = useState(!initialRecipe);
   const [error, setError] = useState(null);
-
 
   useEffect(() => {
     async function fetchRecipeDetails() {
@@ -189,12 +239,11 @@ function RecipePage({user}) {
         </div>
       </div>
               
-                {user ? (
-                
-            <RatingStars recipeId={recipe.id} user={user} recipe={recipe} />
-          ) : (
-            <p style={{ textAlign: "center" }}>Log in to rate this recipe.</p>
-          )}
+      {user ? (
+        <RatingStars recipeId={recipe.id} user={user} recipe={recipe} />
+      ) : (
+        <p style={{ textAlign: "center" }}>Log in to rate this recipe.</p>
+      )}
 
       <RecipeVideo recipeTitle={recipe.title} />
 

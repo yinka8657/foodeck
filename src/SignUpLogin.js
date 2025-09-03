@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import logo from "./logo.svg";
-import { supabase } from "./supabaseClient"; // ✅ Make sure this imports your supabaseClient.js
-
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+import { supabase } from "./supabaseClient"; // Ensure this imports your Supabase client
 
 const styles = {
   outerContainer: {
@@ -105,18 +103,14 @@ export default function SignUpLogin({ onLogin }) {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Restore session from localStorage
   useEffect(() => {
-    const preventElasticScroll = (e) => e.preventDefault();
-    document.body.style.overflow = "hidden";
-    document.body.style.height = "100%";
-    document.addEventListener("touchmove", preventElasticScroll, { passive: false });
-
-    return () => {
-      document.body.style.overflow = "auto";
-      document.body.style.height = "auto";
-      document.removeEventListener("touchmove", preventElasticScroll);
-    };
-  }, []);
+    const session = localStorage.getItem("session");
+    const user = localStorage.getItem("user");
+    if (session && user) {
+      onLogin?.(JSON.parse(user));
+    }
+  }, [onLogin]);
 
   const toggleForm = () => {
     setError("");
@@ -149,14 +143,16 @@ export default function SignUpLogin({ onLogin }) {
       }
       try {
         setLoading(true);
-        // ✅ Supabase sign-up
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
           options: { data: { username } },
         });
         if (error) throw error;
-        setSuccess("Registration successful! Confirm your email before login.");
+
+        setSuccess(
+          "Registration successful! Please confirm your email before login."
+        );
         setIsSignUp(false);
         setForm({ email, username: "", password: "", confirmPassword: "" });
       } catch (err) {
@@ -171,23 +167,21 @@ export default function SignUpLogin({ onLogin }) {
       }
       try {
         setLoading(true);
-        // ✅ Supabase login
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
 
-        console.log("✅ Login successful:", data);
-
-        // ✅ Persist session & user
-        localStorage.setItem("session", JSON.stringify(data.session));
-        localStorage.setItem("user", JSON.stringify(data.user));
+        // Persist session & user
+        const user = supabase.auth.user();
+        localStorage.setItem("session", JSON.stringify(supabase.auth.session()));
+        localStorage.setItem("user", JSON.stringify(user));
 
         const userData = {
-          id: data.user?.id,
-          email: data.user?.email || email,
-          username: data.user?.user_metadata?.username || "",
+          id: user?.id,
+          email: user?.email || email,
+          username: user?.user_metadata?.username || "",
         };
 
         setSuccess("Login successful!");
@@ -219,7 +213,9 @@ export default function SignUpLogin({ onLogin }) {
 
         <form onSubmit={handleSubmit}>
           <div style={styles.formGroup}>
-            <label htmlFor="email" style={styles.label}>Email</label>
+            <label htmlFor="email" style={styles.label}>
+              Email
+            </label>
             <input
               id="email"
               name="email"
@@ -233,7 +229,9 @@ export default function SignUpLogin({ onLogin }) {
 
           {isSignUp && (
             <div style={styles.formGroup}>
-              <label htmlFor="username" style={styles.label}>Username</label>
+              <label htmlFor="username" style={styles.label}>
+                Username
+              </label>
               <input
                 id="username"
                 name="username"
@@ -247,7 +245,9 @@ export default function SignUpLogin({ onLogin }) {
           )}
 
           <div style={styles.formGroup}>
-            <label htmlFor="password" style={styles.label}>Password</label>
+            <label htmlFor="password" style={styles.label}>
+              Password
+            </label>
             <input
               id="password"
               name="password"
@@ -261,7 +261,9 @@ export default function SignUpLogin({ onLogin }) {
 
           {isSignUp && (
             <div style={styles.formGroup}>
-              <label htmlFor="confirmPassword" style={styles.label}>Confirm Password</label>
+              <label htmlFor="confirmPassword" style={styles.label}>
+                Confirm Password
+              </label>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
