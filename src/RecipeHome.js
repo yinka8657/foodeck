@@ -81,7 +81,7 @@ function RecipeHome({ showTopBar }) {
         </div>
 
         <div className="RecipeListTopContainer">
-          <ul className="ItemList no-scrollbar">
+          <ul className="ItemList no-scrollbar" style={{marginBottom:"150px"}}>
             {filteredSortedRecipes.length === 0 ? (
               <p className="no-recipe-message">
                 No recipes found
