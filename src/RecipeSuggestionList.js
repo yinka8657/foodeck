@@ -198,7 +198,7 @@ function RecipeSuggestionList() {
                         <span className="CookingTime"><strong>Time:</strong> {item.time}</span>
                       </div>
                       <div className="InfoIconContainer" style={{ display: 'block' }}>
-                        <div className="RecipeRating" style={{width:"fit-content", fontSize: "12px", padding:"5px"}}>
+                        <div className="RecipeRating" style={{ fontSize: "12px", padding:"5px"}}>
                           <span><strong>{item.matchCount}</strong></span>/<span><strong>{ingredientsList.length}</strong></span>
                         </div>
                         <div className='Rating' style={{width: "100%", margin:"5px auto 0 auto", paddingTop:"2px", borderTop:"1px black solid", display:"flex"}}>
