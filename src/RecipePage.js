@@ -3,11 +3,12 @@ import backbutton from './backcirclebutton.svg';
 import ingredientlisticon from './ingredient-list-white-icon.svg';
 import suggstionicon from './suggestion-white-icon.svg';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import RatingStars from './RatingStars.js';
+import PropTypes from 'prop-types';
 
-
-const localVideos = [
+// Constants
+const LOCAL_VIDEOS = [
   {
     id: "local1",
     title: "How to cook Jollof Rice",
@@ -28,104 +29,135 @@ const localVideos = [
   },
 ];
 
-// Video container with YouTube, Dailymotion, and Local fallback
-function RecipeVideo({ recipeTitle }) {
-  const [videoSrc, setVideoSrc] = useState(null);
-  const [thumbnail, setThumbnail] = useState(null);
-  const [loaded, setLoaded] = useState(false);
+// Video fetcher utility
+const fetchVideoSource = async (recipeTitle) => {
+  try {
+    const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY;
+    const query = encodeURIComponent(`how to cook ${recipeTitle}`);
 
-  // Local fallback videos
- 
-
-  useEffect(() => {
-    async function fetchVideo() {
-      try {
-        const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY;
-        const query = encodeURIComponent(`how to cook ${recipeTitle}`);
-
-        if (apiKey) {
-          // Try YouTube first
-          const res = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${apiKey}&maxResults=5&type=video`
-          );
-          const data = await res.json();
-
-          if (data.items && data.items.length > 0) {
-            const randomVideo = data.items[Math.floor(Math.random() * data.items.length)];
-            setVideoSrc(`https://www.youtube.com/embed/${randomVideo.id.videoId}`);
-            setThumbnail(randomVideo.snippet.thumbnails.medium.url);
-            return;
-          }
-        }
-
-        // If YouTube fails, try Dailymotion
-        console.log("⚠️ YouTube failed, trying Dailymotion...");
-        const dmRes = await fetch(
-          `https://api.dailymotion.com/videos?search=${query}&limit=5&fields=id,thumbnail_720_url,title`
-        );
-        const dmData = await dmRes.json();
-
-        if (dmData.list && dmData.list.length > 0) {
-          const randomVideo = dmData.list[Math.floor(Math.random() * dmData.list.length)];
-          setVideoSrc(`https://www.dailymotion.com/embed/video/${randomVideo.id}`);
-          setThumbnail(randomVideo.thumbnail_720_url);
-          return;
-        }
-
-        // If Dailymotion fails, use local
-        console.log("⚠️ Dailymotion failed, using local fallback...");
-        const randomLocal = localVideos[Math.floor(Math.random() * localVideos.length)];
-        setVideoSrc(randomLocal.url);
-        setThumbnail(randomLocal.thumbnail);
-      } catch (err) {
-        console.error("Video fetch error:", err);
-        const randomLocal = localVideos[Math.floor(Math.random() * localVideos.length)];
-        setVideoSrc(randomLocal.url);
-        setThumbnail(randomLocal.thumbnail);
+    if (apiKey) {
+      // Try YouTube first
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&key=${apiKey}&maxResults=5&type=video`
+      );
+      
+      if (!res.ok) throw new Error('YouTube API request failed');
+      
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        const randomVideo = data.items[Math.floor(Math.random() * data.items.length)];
+        return {
+          src: `https://www.youtube.com/embed/${randomVideo.id.videoId}`,
+          thumbnail: randomVideo.snippet.thumbnails.medium.url,
+          source: 'youtube'
+        };
       }
     }
 
-    fetchVideo();
+    // If YouTube fails, try Dailymotion
+    const dmRes = await fetch(
+      `https://api.dailymotion.com/videos?search=${query}&limit=5&fields=id,thumbnail_720_url,title`
+    );
+    
+    if (dmRes.ok) {
+      const dmData = await dmRes.json();
+      if (dmData.list && dmData.list.length > 0) {
+        const randomVideo = dmData.list[Math.floor(Math.random() * dmData.list.length)];
+        return {
+          src: `https://www.dailymotion.com/embed/video/${randomVideo.id}`,
+          thumbnail: randomVideo.thumbnail_720_url,
+          source: 'dailymotion'
+        };
+      }
+    }
+
+    // If all else fails, use local
+    const randomLocal = LOCAL_VIDEOS[Math.floor(Math.random() * LOCAL_VIDEOS.length)];
+    return {
+      src: randomLocal.url,
+      thumbnail: randomLocal.thumbnail,
+      source: 'local'
+    };
+  } catch (err) {
+    console.error("Video fetch error:", err);
+    // Return local fallback on error
+    const randomLocal = LOCAL_VIDEOS[Math.floor(Math.random() * LOCAL_VIDEOS.length)];
+    return {
+      src: randomLocal.url,
+      thumbnail: randomLocal.thumbnail,
+      source: 'local'
+    };
+  }
+};
+
+// Video container with YouTube, Dailymotion, and Local fallback
+function RecipeVideo({ recipeTitle }) {
+  const [videoData, setVideoData] = useState({ src: null, thumbnail: null });
+  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    async function getVideo() {
+      if (!recipeTitle) return;
+      
+      setLoading(true);
+      const data = await fetchVideoSource(recipeTitle);
+      
+      if (isMounted) {
+        setVideoData(data);
+        setLoading(false);
+      }
+    }
+
+    getVideo();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [recipeTitle]);
 
-  if (!videoSrc) return null;
+  if (!videoData.src) {
+    if (loading) {
+      return (
+        <div className="video-container">
+          <p>Loading video...</p>
+        </div>
+      );
+    }
+    return null;
+  }
 
   return (
-    <div style={{
-      margin: '1rem auto 3em auto',
-      width: '100%',
-      maxWidth: '90vw',
-      background: 'transparent',
-      padding: '1rem',
-      boxSizing: 'border-box'
-    }}>
-      <h2 style={{ marginBottom: '1rem', marginTop: '0', textAlign: 'center', color: 'black', fontSize:'20px' }}>
-        Watch how to cook {recipeTitle}
-      </h2>
-      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
-        {!loaded && thumbnail && (
-          <img
-            src={thumbnail}
-            alt={`Thumbnail for ${recipeTitle}`}
-            style={{ 
-              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', cursor: 'pointer', objectFit: 'cover'
-            }}
+    <div className="video-container">
+      <h2 className="video-title">Watch how to cook {recipeTitle}</h2>
+      <div className="video-wrapper">
+        {!loaded && videoData.thumbnail && (
+          <div 
+            className="video-thumbnail"
             onClick={() => setLoaded(true)}
-          />
+            role="button"
+            tabIndex={0}
+            onKeyPress={e => { 
+              if (e.key === 'Enter' || e.key === ' ') setLoaded(true); 
+            }}
+          >
+            <img
+              src={videoData.thumbnail}
+              alt={`Thumbnail for ${recipeTitle}`}
+            />
+            <div className="play-overlay">
+              <svg viewBox="0 0 24 24" width="68" height="68">
+                <path fill="currentColor" d="M8,5.14V19.14L19,12.14L8,5.14Z" />
+              </svg>
+            </div>
+          </div>
         )}
         {loaded && (
           <iframe
-            src={videoSrc}
+            src={videoData.src}
             title={`How to cook ${recipeTitle}`}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              border: '0',
-              borderRadius: '8px'
-            }}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             loading="lazy"
@@ -136,7 +168,142 @@ function RecipeVideo({ recipeTitle }) {
   );
 }
 
-function RecipePage({user}) {
+RecipeVideo.propTypes = {
+  recipeTitle: PropTypes.string.isRequired
+};
+
+// Ingredients list component
+function IngredientsList({ ingredients, selectedIngredients }) {
+  const safeSelectedIngredients = Array.isArray(selectedIngredients) 
+    ? selectedIngredients 
+    : [];
+  
+  return (
+    <ol className="ingredients-list">
+      {ingredients.map((item, index) => {
+        const isAvailable = safeSelectedIngredients.some(
+          selIng => selIng.name.toLowerCase() === item.toLowerCase()
+        );
+        
+        return (
+          <li key={index} className={isAvailable ? 'available' : ''}>
+            {item}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+IngredientsList.propTypes = {
+  ingredients: PropTypes.arrayOf(PropTypes.string).isRequired,
+  selectedIngredients: PropTypes.array
+};
+
+// Navigation buttons component
+function NavigationButtons({ navigate }) {
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
+  const buttonConfigs = [
+    {
+      path: '/ingredient-to-recipe/suggestions',
+      icon: suggstionicon,
+      label: 'Suggestion',
+      key: 'suggestions'
+    },
+    {
+      path: '/ingredient-to-recipe',
+      icon: ingredientlisticon,
+      label: 'Ingredients',
+      key: 'ingredients'
+    }
+  ];
+
+  return (
+    <div className="BottomGroupOne">
+      <div className="BottomGroupTop">
+        {buttonConfigs.map(({ path, icon, label, key }) => (
+          <div
+            key={key}
+            className="BottomBtn"
+            onClick={() => handleNavigation(path)}
+            role="button"
+            tabIndex={0}
+            onKeyPress={e => { 
+              if (e.key === 'Enter' || e.key === ' ') handleNavigation(path); 
+            }}
+          >
+            <div className="BtnIconContainer">
+              <img src={icon} alt={label.toLowerCase()} />
+            </div>
+            <span><strong style={{ color: 'yellow' }}>{label}</strong></span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+NavigationButtons.propTypes = {
+  navigate: PropTypes.func.isRequired
+};
+
+// Scroll-aware TopBar component
+function TopBar({ navigate, recipe }) {
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+  const scrollThreshold = 50; // Minimum scroll distance before hiding
+
+  useEffect(() => {
+    const scrollEl = document.querySelector('.IngredientPageWrap');
+    if (!scrollEl) return;
+  
+    const handleScroll = () => {
+      const currentScrollY = scrollEl.scrollTop;
+  
+      if (currentScrollY > lastScrollY.current && currentScrollY > scrollThreshold) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY.current) {
+        setIsVisible(true);
+      }
+      lastScrollY.current = currentScrollY;
+    };
+  
+    scrollEl.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollEl.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  
+  return (
+    <div className={`TopBar ${isVisible ? 'visible' : 'hidden'}`}>
+      <div
+        className="BackBtnIcon"
+        onClick={() => navigate(-1)}
+        role="button"
+        tabIndex={0}
+        onKeyPress={e => { 
+          if (e.key === 'Enter' || e.key === ' ') navigate(-1); 
+        }}
+      >
+        <img src={backbutton} alt="back" />
+      </div>
+      <div className="ExpiryContainer">
+        <span className="ExpiresText">Cooking Time:</span>
+        <span><strong>{recipe.time}</strong></span>
+      </div>
+    </div>
+  );
+}
+
+TopBar.propTypes = {
+  navigate: PropTypes.func.isRequired,
+  recipe: PropTypes.object.isRequired
+};
+
+// Main RecipePage component
+function RecipePage({ user }) {
   console.log("RecipePage user:", user);
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -146,65 +313,60 @@ function RecipePage({user}) {
   const [loading, setLoading] = useState(!initialRecipe);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    async function fetchRecipeDetails() {
-      if (!initialRecipe || !initialRecipe.ingredients || !initialRecipe.instructions) {
-        if (!initialRecipe?.id) {
-          setError('Recipe ID not provided.');
-          setLoading(false);
-          return;
-        }
-        setLoading(true);
-        try {
-          const res = await fetch(`/api/recipes/${initialRecipe.id}`);
-          if (!res.ok) throw new Error('Failed to fetch recipe details');
-          const data = await res.json();
-          setRecipe(data);
-          setLoading(false);
-        } catch (err) {
-          setError(err.message);
-          setLoading(false);
-        }
+  const fetchRecipeDetails = useCallback(async () => {
+    if (!initialRecipe || !initialRecipe.ingredients || !initialRecipe.instructions) {
+      if (!initialRecipe?.id) {
+        setError('Recipe ID not provided.');
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/recipes/${initialRecipe.id}`);
+        if (!res.ok) throw new Error('Failed to fetch recipe details');
+        const data = await res.json();
+        setRecipe(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     }
-    fetchRecipeDetails();
   }, [initialRecipe]);
 
-  if (loading) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>Loading recipe details...</p>;
-  if (error) return <p style={{ textAlign: 'center', marginTop: '2rem', color: 'red' }}>Error: {error}</p>;
-  if (!recipe) return <p style={{ textAlign: 'center', marginTop: '2rem' }}>No recipe data found.</p>;
+  useEffect(() => {
+    fetchRecipeDetails();
+  }, [fetchRecipeDetails]);
 
-  const safeSelectedIngredients = Array.isArray(selectedIngredients) ? selectedIngredients : [];
+  if (loading) return <div className="center-message">Loading recipe details...</div>;
+  if (error) return <div className="center-message error">Error: {error}</div>;
+  if (!recipe) return <div className="center-message">No recipe data found.</div>;
+
   const ingredientsList = Array.isArray(recipe.ingredients)
     ? recipe.ingredients.map(ing => (typeof ing === 'string' ? ing : (ing.name || '')))
     : [];
+  
   const instructionsText = recipe.instructions || 'No instructions available.';
-  const matchedCount = safeSelectedIngredients.length
-    ? safeSelectedIngredients.filter(selIng =>
+  
+  const matchedCount = selectedIngredients && Array.isArray(selectedIngredients)
+    ? selectedIngredients.filter(selIng =>
         ingredientsList.some(ing => ing.toLowerCase() === selIng.name.toLowerCase())
       ).length
     : 0;
 
   return (
     <div className="IngredientPageWrap">
-      <div className="TopBar">
-        <div
-          className="BackBtnIcon"
-          onClick={() => navigate(-1)}
-          role="button"
-          tabIndex={0}
-          onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') navigate(-1); }}
-        >
-          <img src={backbutton} alt="back" style={{ width: '100%' }} />
-        </div>
-        <div className="ExpiryContainer">
-          <span className="ExpiresText">Cooking Time:</span>
-          <span><strong>{recipe.time}</strong></span>
-        </div>
-      </div>
+      <TopBar navigate={navigate} recipe={recipe} />
 
       <div className="IngredientImageBigContainer">
-        <img src={recipe.image_url} alt={recipe.title} style={{ width: '100%', height: '100%' }} />
+        <img 
+          src={recipe.image_url} 
+          alt={recipe.title} 
+          onError={(e) => {
+            e.target.src = '/placeholder-recipe.jpg';
+          }}
+        />
       </div>
 
       <div className="IngredientValueDetailsContainer">
@@ -212,74 +374,42 @@ function RecipePage({user}) {
           <span className="IngredientName"><strong>{recipe.title}</strong></span>
           <div className="RemoveBtnContainer">
             <div className="RecipeRating">
-              <span><strong>{matchedCount}</strong></span>/<span><strong>{ingredientsList.length}</strong></span>
+              <span><strong>{matchedCount}</strong></span>
+              <span>/</span>
+              <span><strong>{ingredientsList.length}</strong></span>
             </div>
           </div>
         </div>
 
         <div className="ValueTextContainer">
           <h3>Ingredients:</h3>
-          <ol style={{ lineHeight: '1.5' }}>
-            {ingredientsList.map((item, index) => {
-              const isAvailable = safeSelectedIngredients.some(selIng => selIng.name.toLowerCase() === item.toLowerCase());
-              return (
-                <li key={index}>
-                  <span style={{ color: isAvailable ? '#DC143C' : 'black', fontWeight: isAvailable ? 'bold' : 'normal' }}>
-                    {item}
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
+          <IngredientsList 
+            ingredients={ingredientsList} 
+            selectedIngredients={selectedIngredients} 
+          />
         </div>
 
         <div className="ValueTextContainer">
           <h3>Instructions:</h3>
-          <p style={{ textAlign: 'justify', lineHeight: '1.5', textJustify:'inter-word', hyphens:'auto' }}>{instructionsText}</p>
+          <p className="instructions-text">{instructionsText}</p>
         </div>
       </div>
               
       {user ? (
         <RatingStars recipeId={recipe.id} user={user} recipe={recipe} />
       ) : (
-        <p style={{ textAlign: "center" }}>Log in to rate this recipe.</p>
+        <p className="center-message">Log in to rate this recipe.</p>
       )}
 
       <RecipeVideo recipeTitle={recipe.title} />
 
-      <div className="BottomGroupOne">
-        <div className="BottomGroupTop">
-          <div
-            className="BottomBtn"
-            onClick={() => navigate('/ingredient-to-recipe/suggestions')}
-            style={{ cursor: 'pointer' }}
-            role="button"
-            tabIndex={0}
-            onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') navigate('/ingredient-to-recipe/suggestions'); }}
-          >
-            <div className="BtnIconContainer">
-              <img src={suggstionicon} alt="suggestion" style={{ width: '100%' }} />
-            </div>
-            <span><strong style={{ color: 'yellow' }}>Suggestion</strong></span>
-          </div>
-
-          <div
-            className="BottomBtn"
-            onClick={() => navigate('/ingredient-to-recipe')}
-            style={{ cursor: 'pointer' }}
-            role="button"
-            tabIndex={0}
-            onKeyPress={e => { if (e.key === 'Enter' || e.key === ' ') navigate('/ingredient-to-recipe'); }}
-          >
-            <div className="BtnIconContainer">
-              <img src={ingredientlisticon} alt="ingredients" style={{ width: '100%' }} />
-            </div>
-            <span><strong style={{ color: 'yellow' }}>Ingredients</strong></span>
-          </div>
-        </div>
-      </div>
+      <NavigationButtons navigate={navigate} />
     </div>
   );
 }
+
+RecipePage.propTypes = {
+  user: PropTypes.object
+};
 
 export default RecipePage;
