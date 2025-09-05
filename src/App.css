@@ -99,7 +99,7 @@ body {
   transform: translateX(-50%);
   width: 100%;
   max-width: 1000px; /* or whatever your site max width is */
-  padding: 1em 25px;  /* avoid vw */
+  padding: 1em 15px;  /* avoid vw */
   display: flex;
   align-items: center;
   justify-content: space-between;

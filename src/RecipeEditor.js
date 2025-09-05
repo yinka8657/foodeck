@@ -98,7 +98,7 @@ export default function RecipeEditor({ onSaved }) {
     !searchResults.some((r) => r.name.toLowerCase() === query.trim().toLowerCase());
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto", marginTop:"100px" }}>
+    <div style={{ padding: 20, maxWidth: 600, marginTop:"100px", margin:"100px auto 150px auto" }}>
       <h2>Add a New Recipe</h2>
 
       <input

@@ -75,7 +75,6 @@ function IngredientList({ showTopBar }) {
     style={{
       display: "flex",
       alignItems: "center",
-      padding: "0.5em 1em",
       boxSizing: "border-box",
       backgroundColor: "white",
       width: "100%",
