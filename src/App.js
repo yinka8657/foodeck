@@ -14,7 +14,6 @@ import './App.css';
 import InstallPage from "./InstallPage";
 import AnalyticsTracker from "./AnalyticsTracker";
 
-
 // Layout
 import MainLayout from './MainLayout';
 
@@ -26,16 +25,13 @@ function App({ user, onLogout }) {
   const [showLogo, setShowLogo] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 
-
   // React GA4
-
   useEffect(() => {
-    ReactGA.initialize("G-DN29GHT6MT"); // replace with your GA4 Measurement ID
-    ReactGA.send("pageview"); // track initial pageview
+    ReactGA.initialize("G-DN29GHT6MT");
+    ReactGA.send("pageview");
   }, []);
 
   //Conditional Rendering for Different Screens
-
   useEffect(() => {
     const checkScreenSize = () => setIsMobile(window.innerWidth <= 480);
     checkScreenSize();
@@ -45,15 +41,12 @@ function App({ user, onLogout }) {
 
   useEffect(() => {
     const handleLoad = () => setTimeout(() => setIsLoaded(true), 200);
-
     if (document.readyState === 'complete') handleLoad();
     else window.addEventListener('load', handleLoad);
-
     return () => window.removeEventListener('load', handleLoad);
   }, []);
 
   //Pinch and Zoom prevent on iOS
-
   useEffect(() => {
     const handleTouch = (event) => {
       if (event.touches.length > 1) {
@@ -61,12 +54,10 @@ function App({ user, onLogout }) {
       }
     };
     document.addEventListener("touchstart", handleTouch, { passive: false });
-
     return () => {
       document.removeEventListener("touchstart", handleTouch);
     };
   }, []);
-
 
   const handleLogoFinish = () => setShowLogo(false);
 
@@ -81,36 +72,28 @@ function App({ user, onLogout }) {
       `${window.innerHeight * 0.01}px`
     );
   }
-
-  // Set on load
   setVh();
-
-  // Update on resize/orientation change
   window.addEventListener('resize', setVh);
   window.addEventListener('orientationchange', setVh);
 
-
-   {/* Public onboarding page */}
-   <Route path="/install" element={<InstallPage style={{ width: '100%' }} />} />
-
   return (
     <SelectedIngredientsProvider>
-      <MainLayout user={user} onLogout={onLogout}>
+      <AnalyticsTracker />
 
-         {/* Analytics tracker sits here so it runs on every route change */}
-         <AnalyticsTracker /> 
+      <Routes>
+        {/* ✅ Public onboarding page */}
+        <Route path="/install" element={<InstallPage style={{ width: '100%' }} />} />
 
-        <Routes>
+        {/* ✅ All other routes inside MainLayout */}
+        <Route element={<MainLayout user={user} onLogout={onLogout} />}>
           <Route path="/" element={<RecipeHome />} />
-          <Route path="/ingredient-to-recipe" element={<IngredientSelectorPage  />} />
-          <Route path="/ingredient-to-recipe/suggestions" element={<RecipeSuggestionPage  />} />
+          <Route path="/ingredient-to-recipe" element={<IngredientSelectorPage />} />
+          <Route path="/ingredient-to-recipe/suggestions" element={<RecipeSuggestionPage />} />
           <Route path="/recipe" element={<RecipePage user={user} />} />
           <Route path="/ingredientPage" element={<IngredientPage />} />
           <Route path="/admin/new-recipe" element={<RecipeEditor />} />
-          {/* Other routes */}
-          
-        </Routes>
-      </MainLayout>
+        </Route>
+      </Routes>
     </SelectedIngredientsProvider>
   );
 }
