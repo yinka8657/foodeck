@@ -24,7 +24,6 @@ function App({ user, onLogout }) {
   const [showLogo, setShowLogo] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  console.log("Current location:", window.location.pathname);
 
   // React GA4
   useEffect(() => {

@@ -98,8 +98,7 @@ function RatingStars({ recipeId, user, recipe }) {
           />
         </button>
       ))}
-      {/* Debug: show current value */}
-      <span style={{ marginLeft: 8 }}>({rating})</span>
+      
     </div>
   );
 }

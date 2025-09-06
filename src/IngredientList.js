@@ -93,15 +93,15 @@ function IngredientList({ showTopBar }) {
 
     <div
       className={`SearchDisplayContainer ${showSearch && searchResults.length > 0 ? 'show' : ''}`}
-      style={{ position: 'absolute', top: '60px', left: 0, right: 0, zIndex: 999 }}
+      style={{ position: 'absolute', top: '60px', left: 0, right: 0, zIndex: 999, width:"95vw", marginTop:"20px" }}
     >
-      <ul className="SearchList" style={{ width: '100%', fontSize: '20px', fontWeight: '600', margin: 0 }}>
+      <ul className="SearchList" style={{ fontSize: '20px', fontWeight: '600', margin: 0 }}>
         {searchResults.length === 0 && query && (
           <li className='SearchResult'>No results</li>
         )}
         {searchResults.map(item => (
           <li
-            className='SearchResult'
+            className='SearchResult' style= {{}}
             key={item.id}
             onClick={() => handleSelectResult(item)}
           >

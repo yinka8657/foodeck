@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Carousel } from "react-responsive-carousel";
 import API_URL from "./config";
 
 const MyCarousel = ({ selectedIngredients = [] }) => {
   const [recipes, setRecipes] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${API_URL}/api/recipes`)
@@ -29,24 +30,31 @@ const MyCarousel = ({ selectedIngredients = [] }) => {
           emulateTouch
           swipeable
           useKeyboardArrows
+          onClickItem={(index, item) => {
+            const recipe = recipes[index];
+            navigate("/recipe", { state: { recipe, selectedIngredients } });
+          }}
         >
           {recipes.map((recipe, index) => (
-            <div key={index} style={{ cursor: 'pointer' }}>
-              {/* Wrap entire slide in Link */}
-              <Link
-                to="/recipe"
-                state={{ recipe, selectedIngredients }}
-                style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+            <div key={index} style={{ cursor: "pointer" }}>
+              <img
+                src={recipe.image_url || "/placeholder.jpg"}
+                alt={recipe.title}
+                style={{ objectFit: "cover", height: "300px", width: "100%" }}
+              />
+              <p
+                className="legend"
+                style={{
+                  fontSize: "x-large",
+                  marginTop: "0.5rem",
+                  background: "rgba(0,0,0,0.5)",
+                  color: "white",
+                  padding: "0.3rem 0.5rem",
+                  borderRadius: "5px",
+                }}
               >
-                <img
-                  src={recipe.image_url || "/placeholder.jpg"}
-                  alt={recipe.title}
-                  style={{ objectFit: "cover", height: "300px", width: "100%" }}
-                />
-                <p className="legend" style={{ fontSize: "x-large", marginTop: '0.5rem' }}>
-                  {recipe.title}
-                </p>
-              </Link>
+                {recipe.title}
+              </p>
             </div>
           ))}
         </Carousel>

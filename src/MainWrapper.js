@@ -7,39 +7,48 @@ import { supabase } from "./supabaseClient"; // ✅ supabase client with persist
 
 export default function MainWrapper() {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // ✅ prevent flicker
 
   // ✅ Initialize user on first load
   useEffect(() => {
     const initUser = async () => {
-      // try localStorage first
-      const savedUser = localStorage.getItem("user");
-      if (savedUser) {
-        try {
-          const parsed = JSON.parse(savedUser);
-          if (parsed?.id) {
-            setUser(parsed);
-            console.log("✅ Loaded user from localStorage:", parsed);
-            return;
+      try {
+        // Try localStorage first
+        const savedUser = localStorage.getItem("user");
+        if (savedUser) {
+          try {
+            const parsed = JSON.parse(savedUser);
+            if (parsed?.id) {
+              setUser(parsed);
+              console.log("✅ Loaded user from localStorage:", parsed);
+              setIsLoading(false);
+              return;
+            }
+          } catch {
+            localStorage.removeItem("user");
           }
-        } catch {
-          localStorage.removeItem("user");
         }
-      }
 
-      // fallback: fetch from Supabase session
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+        // Fallback: fetch from Supabase session
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
-      if (session?.user && !error) {
-        setUser(session.user);
-        localStorage.setItem("user", JSON.stringify(session.user));
-        console.log("✅ Synced user from Supabase:", session.user);
-      } else {
+        if (session?.user && !error) {
+          setUser(session.user);
+          localStorage.setItem("user", JSON.stringify(session.user));
+          console.log("✅ Synced user from Supabase:", session.user);
+        } else {
+          setUser(null);
+          localStorage.removeItem("user");
+          console.log("⚠️ No logged-in user found");
+        }
+      } catch (err) {
+        console.error("❌ initUser error:", err);
         setUser(null);
-        localStorage.removeItem("user");
-        console.log("⚠️ No logged-in user found");
+      } finally {
+        setIsLoading(false); // ✅ only finish after check
       }
     };
 
@@ -90,6 +99,16 @@ export default function MainWrapper() {
     setUser(null);
     console.log("👋 User logged out");
   };
+
+  // ✅ Prevent flicker
+  if (isLoading) {
+    return (
+      <div className="splash-screen">
+        {/* Replace with your splash component if you have one */}
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <Routes>
