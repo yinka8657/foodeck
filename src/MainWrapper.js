@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import SignUpLogin from "./SignUpLogin";
+import { Routes, Route } from "react-router-dom";
 import App from "./App";
+import InstallPage from "./InstallPage";
 import { supabase } from "./supabaseClient"; // ✅ supabase client with persistSession
 
 export default function MainWrapper() {
@@ -90,12 +92,21 @@ export default function MainWrapper() {
   };
 
   return (
-    <>
-      {!user ? (
-        <SignUpLogin onLogin={handleLogin} />
-      ) : (
-        <App user={user} onLogout={handleLogout} />
-      )}
-    </>
+    <Routes>
+      {/* Public onboarding route */}
+      <Route path="/install" element={<InstallPage />} />
+
+      {/* Everything else requires auth */}
+      <Route
+        path="/*"
+        element={
+          !user ? (
+            <SignUpLogin onLogin={handleLogin} />
+          ) : (
+            <App user={user} onLogout={handleLogout} />
+          )
+        }
+      />
+    </Routes>
   );
 }

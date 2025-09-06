@@ -11,7 +11,6 @@ import IngredientSelectorPage from './IngredientSelectorPage';
 import RecipeSuggestionPage from './RecipeSuggestionPage';
 import LogoPage from './LogoPage';
 import './App.css';
-import InstallPage from "./InstallPage";
 import AnalyticsTracker from "./AnalyticsTracker";
 
 // Layout
@@ -24,6 +23,8 @@ function App({ user, onLogout }) {
   const [isMobile, setIsMobile] = useState(true);
   const [showLogo, setShowLogo] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  console.log("Current location:", window.location.pathname);
 
   // React GA4
   useEffect(() => {
@@ -81,8 +82,8 @@ function App({ user, onLogout }) {
       <AnalyticsTracker />
 
       <Routes>
-        {/* ✅ Public onboarding page */}
-        <Route path="/install" element={<InstallPage style={{ width: '100%' }} />} />
+      
+        
 
         {/* ✅ All other routes inside MainLayout */}
         <Route element={<MainLayout user={user} onLogout={onLogout} />}>

@@ -730,13 +730,12 @@ align-items: center;
 }
 
 .MenuBarContainer{
-  position: relative;
-  width: 70vw;
-  height: 100vh;
-  background-color: white;
-  display: flex;
-  justify-content: center;
-  padding-top: 150px;
+  background: white;
+  width: 280px;
+  max-width: 80%;
+  height: 100%;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
  
   
 }
@@ -912,8 +911,11 @@ align-items: center;
   background-color: rgba(0,0,0,0.5);
   z-index: 2000;
   display: flex;
-  justify-content: flex-start; /* menu sticks left */
+  justify-content: flex-start;
   align-items: stretch;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
 }
 
 /* The side menu container */
@@ -1188,6 +1190,26 @@ html, body {
   padding-bottom: 0.5rem;
   transition: transform 0.3s ease;
 }
+
+/* Overlay visible */
+.MenuBarOverlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+/* Slide in */
+.MenuBarContainer.open {
+  transform: translateX(0);
+}
+
+/* Slide out */
+.MenuBarContainer.closed {
+  transform: translateX(-100%);
+}
+
+
+
 
 
 

@@ -2,8 +2,14 @@
 import React from "react";
 import "./App.css"; // optional for styling
 import logo from './logo2.svg'
+import { useEffect } from "react";
 
 const InstallPage = () => {
+
+
+    useEffect(() => {
+        console.log("✅ InstallPage mounted");
+      }, []);
   return (
     <div className="install-container FullHeight">
         <div className="InstallHeaderContainer" style={{padding:"30px"}}>
