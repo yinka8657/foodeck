@@ -16,6 +16,10 @@ function IngredientList({ showTopBar }) {
   const [showSearch, setShowSearch] = useState(false);
   const [confirmRemoveId, setConfirmRemoveId] = useState(null);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Debounced search
   useEffect(() => {
     if (!query.trim()) {
