@@ -277,7 +277,7 @@ function TopBar({ navigate, recipe }) {
 
   
   return (
-    <div className={`TopBar ${isVisible ? 'visible' : 'hidden'}`}>
+    <div className={`TopBar ${isVisible ? 'visible' : 'hidden'}`} style={{ background: "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))"}}>
       <div
         className="BackBtnIcon"
         onClick={() => navigate(-1)}
@@ -356,7 +356,14 @@ function RecipePage({ user }) {
     : 0;
 
   return (
-    <div className="IngredientPageWrap">
+    <div className="IngredientPageWrap" onTouchMove={(e) => {
+      const el = e.currentTarget;
+      const atTop = el.scrollTop === 0;
+      const atBottom = el.scrollHeight - el.scrollTop === el.clientHeight;
+  
+      if (atTop && e.touches[0].clientY > 0) e.preventDefault();
+      if (atBottom && e.touches[0].clientY < 0) e.preventDefault();
+    }}>
       <TopBar navigate={navigate} recipe={recipe} />
 
       <div className="IngredientImageBigContainer">
