@@ -674,7 +674,7 @@ align-items: center;
   width: 100vw;
   height: 100vh;
   background-color: yellow; /* light transparent yellow overlay */
-  z-index: 1100; /* higher than other components */
+  z-index: 1500; /* higher than other components */
   display: flex;
   justify-content: center;  /* center horizontally */
   align-items: flex-start;  /* align near top */
