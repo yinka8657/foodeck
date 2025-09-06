@@ -90,6 +90,9 @@ function App({ user, onLogout }) {
   window.addEventListener('orientationchange', setVh);
 
 
+   {/* Public onboarding page */}
+   <Route path="/install" element={<InstallPage style={{ width: '100%' }} />} />
+
   return (
     <SelectedIngredientsProvider>
       <MainLayout user={user} onLogout={onLogout}>
@@ -105,7 +108,7 @@ function App({ user, onLogout }) {
           <Route path="/ingredientPage" element={<IngredientPage />} />
           <Route path="/admin/new-recipe" element={<RecipeEditor />} />
           {/* Other routes */}
-          <Route path="/install" element={<InstallPage style={{ width: '100%' }} />} />
+          
         </Routes>
       </MainLayout>
     </SelectedIngredientsProvider>
