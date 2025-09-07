@@ -137,7 +137,7 @@ body {
   position: relative;
   max-width: 1000px;
   margin: 0 auto;
-  padding: 10px;
+  /* padding: 10px; */
   top: 0; /* adjusted for sticky header offset in JS */
   overflow-x: hidden;
   box-sizing: border-box;
