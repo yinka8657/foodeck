@@ -25,7 +25,7 @@ function IngredientPage() {
   return (
     <div className="IngredientPageWrap">
       {/* Top bar */}
-      <div className="TopBar">
+      <div className="TopBar" style={{ background: "linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1))" }}>
         <div className="BackBtnIcon" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }}>
           <img src={backbutton} alt="back" style={{ width: '100%' }} />
         </div>
@@ -61,7 +61,7 @@ function IngredientPage() {
           <p style={{lineHeight:'1.5'}}>{ingredient.value || 'N/A'}</p>
         </div>
 
-        <div className="ValueTextContainer">
+        <div className="ValueTextContainer" style={{marginBottom:"3em"}}>
           <h3>Description:</h3>
           <p style={{textAlign: 'justify', textJustify: "inter-word", lineHeight:'1.5'}}>{ingredient.description || 'No description available.'}</p>
         </div>

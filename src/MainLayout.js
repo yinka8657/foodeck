@@ -25,7 +25,8 @@ const MainLayout = ({ onLogout, user }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  const hideLayoutRoutes = ["/install", "/recipe"];
+  // 👉 Hide *everything layout-related* for these routes
+  const hideLayoutRoutes = ["/install", "/recipe", "/ingredientPage"];
   const shouldHideLayout = hideLayoutRoutes.includes(location.pathname);
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -56,14 +57,14 @@ const MainLayout = ({ onLogout, user }) => {
         />
       )}
 
-      {/* 👉 This is where child routes render */}
+      {/* 👉 Child routes render here */}
       <div className="MainContent">
         <Outlet context={{ showTopBar }} />
       </div>
 
       {!shouldHideLayout && <Nav />}
 
-      {menuOpen && (
+      {!shouldHideLayout && menuOpen && (
         <MenuBar
           isOpen={menuOpen}
           onClose={closeMenu}
@@ -72,7 +73,9 @@ const MainLayout = ({ onLogout, user }) => {
         />
       )}
 
-      {notificationOpen && <Notification onBack={closeNotification} />}
+      {!shouldHideLayout && notificationOpen && (
+        <Notification onBack={closeNotification} />
+      )}
     </SelectedIngredientsProvider>
   );
 };
