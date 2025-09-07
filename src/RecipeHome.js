@@ -56,14 +56,13 @@ function RecipeHome({ showTopBar }) {
           position: "sticky",
           zIndex: 1000,
           backgroundColor: "white",
-          paddingBottom: "0.5rem",
           transition: "transform 0.3s ease",
           transform: showTopBar ? "translateY(0)" : "translateY(-100%)",
         }}
       >
         <div className="Recipe-search-bar" style={{top:"0"}}>
           <img src={addrecipeicon} alt="addrecipeicon" style={{ width: "10vw" }} />
-          <form onSubmit={(e) => e.preventDefault()} style={{ flex: 1, margin: "0 10px" }}>
+          <form onSubmit={(e) => e.preventDefault()} style={{ flex: 1, margin: "0 15px" }}>
             <input
               type="text"
               placeholder="Search Recipe"

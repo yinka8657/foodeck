@@ -137,7 +137,7 @@ body {
   position: relative;
   max-width: 1000px;
   margin: 0 auto;
-  /* padding: 10px; */
+  padding: 10px;
   top: 0; /* adjusted for sticky header offset in JS */
   overflow-x: hidden;
   box-sizing: border-box;
@@ -1185,7 +1185,7 @@ html, body {
 /* Recipe search bar fixed → sticky */
 .Recipe-search-bar-wrapper {
   position: sticky;
-  top: var(--top-offset, 80px); /* dynamically controlled by React */
+  top: var(--top-offset, 75px); /* dynamically controlled by React */
   z-index: 1000;
   background-color: white;
   transition: transform 0.3s ease;

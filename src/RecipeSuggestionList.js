@@ -7,7 +7,7 @@ import sortbuttonforward from './sort-forward.svg';
 import solidstar from "./star-solid.svg";
 import API_URL from "./config";
 import Lottie from "lottie-react";
-import loadingAnimation from "./assets/Loading.json";
+import loadingAnimation from "./assets/Loadingbar.json";
 
 
 

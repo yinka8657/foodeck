@@ -91,7 +91,7 @@ function IngredientList({ showTopBar }) {
       placeholder="Search Ingredient"
       value={query}
       onChange={(e) => setQuery(e.target.value)}
-      style={{ fontSize: "20px", margin: "0 10px", flex: 1 }}
+      style={{ fontSize: "20px", margin: "0 15px", flex: 1 }}
     />
     <img src={search} alt="search" style={{ width: "8vw" }} />
 
