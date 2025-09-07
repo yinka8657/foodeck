@@ -15,27 +15,46 @@ function RecipeSuggestionList() {
   const [sortDescending, setSortDescending] = useState(true);
   const [ratings, setRatings] = useState({});
   const [fetched, setFetched] = useState(false);
+  const [ratingsFetched, setRatingsFetched] = useState(false);
+
+  // Stable key for caching + effect dependencies
+  const ingredientKey = useMemo(() => {
+    if (!selectedIngredients?.length) return "";
+    return selectedIngredients.map(i => i.name).sort().join("_");
+  }, [selectedIngredients]);
 
   // Fetch & cache recipes
   useEffect(() => {
-    if (!selectedIngredients?.length) {
+    if (!ingredientKey) {
       setRecipes([]);
       setFetched(false);
+      setRatingsFetched(false);
       setRecipeCount(0);
       return;
     }
 
-    const cacheKey = `recipeSuggestions_${selectedIngredients.map(i => i.name).join("_")}`;
+    const cacheKey = `recipeSuggestions_${ingredientKey}`;
     const cacheTimeKey = cacheKey + "_time";
-    const cached = localStorage.getItem(cacheKey);
-    const cacheTime = localStorage.getItem(cacheTimeKey);
-    const CACHE_EXPIRY = 5 * 60 * 1000;
+    const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
+    let cached = null;
+    let cacheTime = null;
+    try {
+      cached = localStorage.getItem(cacheKey);
+      cacheTime = localStorage.getItem(cacheTimeKey);
+    } catch (e) {
+      console.warn("localStorage not available:", e);
+    }
 
     if (cached && cacheTime && Date.now() - parseInt(cacheTime, 10) < CACHE_EXPIRY) {
-      const parsed = JSON.parse(cached);
-      setRecipes(parsed);
-      setFetched(true);
-      return;
+      try {
+        const parsed = JSON.parse(cached);
+        setRecipes(parsed);
+        setFetched(true);
+        return;
+      } catch (e) {
+        console.warn("Cache parse error:", e);
+      }
     }
 
     setLoading(true);
@@ -44,7 +63,7 @@ function RecipeSuggestionList() {
     fetch(`${API_URL}/api/recipes/suggest`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ selectedIngredients: selectedIngredients.map(i => i.name) }),
+      body: JSON.stringify({ selectedIngredients: ingredientKey.split("_") }),
     })
       .then(async res => {
         if (!res.ok) throw new Error(await res.text());
@@ -54,27 +73,39 @@ function RecipeSuggestionList() {
       .then(data => {
         const recipesArray = Array.isArray(data) ? data : [];
         setRecipes(recipesArray);
-        localStorage.setItem(cacheKey, JSON.stringify(recipesArray));
-        localStorage.setItem(cacheTimeKey, Date.now().toString());
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(recipesArray));
+          localStorage.setItem(cacheTimeKey, Date.now().toString());
+        } catch (e) {
+          console.warn("localStorage save failed:", e);
+        }
       })
       .catch(err => setFetchError(err.message))
       .finally(() => setFetched(true));
-  }, [selectedIngredients, setRecipeCount]);
+  }, [ingredientKey, setRecipeCount]);
 
   // Fetch ratings
   useEffect(() => {
-    if (!recipes.length) return;
+    if (!recipes.length) {
+      setRatingsFetched(false);
+      return;
+    }
     const ids = recipes.map(r => r.id).filter(Boolean).join(",");
     if (!ids) return;
 
+    setRatingsFetched(false);
     fetch(`${API_URL}/api/recipes/ratings/average?ids=${ids}`)
       .then(res => res.text().then(txt => ({ ok: res.ok, txt })))
       .then(({ ok, txt }) => {
         if (!ok) throw new Error(txt);
         const data = JSON.parse(txt);
         setRatings(data);
+        setRatingsFetched(true);
       })
-      .catch(err => console.error("Error fetching ratings:", err));
+      .catch(err => {
+        console.error("Error fetching ratings:", err);
+        setRatingsFetched(true); // mark as done to avoid infinite loading
+      });
   }, [recipes]);
 
   // Compute matchCount for all recipes once
@@ -88,8 +119,9 @@ function RecipeSuggestionList() {
     });
   }, [recipes, selectedIngredients]);
 
-  // Filter & sort recipes for display
+  // Filter & sort recipes (only once ratings are fetched)
   const sortedRecipes = useMemo(() => {
+    if (!ratingsFetched) return [];
     const filtered = recipesWithMatch.filter(r => r.matchCount > 0);
     return filtered.sort((a, b) => {
       if (b.ratio !== a.ratio) return b.ratio - a.ratio;
@@ -101,18 +133,20 @@ function RecipeSuggestionList() {
       if (timeA !== timeB) return sortDescending ? timeB - timeA : timeA - timeB;
       return a.title.localeCompare(b.title);
     });
-  }, [recipesWithMatch, ratings, sortDescending]);
+  }, [recipesWithMatch, ratings, sortDescending, ratingsFetched]);
 
   // Update recipe count only after filtering
   useEffect(() => {
-    setRecipeCount(sortedRecipes.length);
-  }, [sortedRecipes, setRecipeCount]);
+    if (ratingsFetched) {
+      setRecipeCount(sortedRecipes.length);
+    }
+  }, [sortedRecipes, setRecipeCount, ratingsFetched]);
 
   // --- UI ---
   if (!selectedIngredients?.length) return <p className="center-message">No Recipe Suggestion yet... Add ingredients to see suggestions.</p>;
-  if (loading && !fetched) return <p className="center-message">Loading suggestions...</p>;
+  if ((loading && !fetched) || !ratingsFetched) return <p className="center-message">Loading suggestions...</p>;
   if (fetchError && !recipes.length) return <p className="center-message" style={{ color: 'red' }}>Failed to load suggestions: {fetchError}</p>;
-  if (!loading && fetched && !sortedRecipes.length) return <p className="center-message">No suggestions found.</p>;
+  if (!loading && fetched && ratingsFetched && !sortedRecipes.length) return <p className="center-message">No suggestions found.</p>;
 
   return (
     <div className="Recipehome" style={{ top: '100px', paddingTop: "15px" }}>
