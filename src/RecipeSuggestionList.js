@@ -6,6 +6,10 @@ import sortbuttonbackward from './sort-back.svg';
 import sortbuttonforward from './sort-forward.svg';
 import solidstar from "./star-solid.svg";
 import API_URL from "./config";
+import Lottie from "lottie-react";
+import loadingAnimation from "./assets/Loading.json";
+
+
 
 function RecipeSuggestionList() {
   const { selectedIngredients, setRecipeCount } = useContext(SelectedIngredientsContext);
@@ -144,7 +148,22 @@ function RecipeSuggestionList() {
 
   // --- UI ---
   if (!selectedIngredients?.length) return <p className="center-message">No Recipe Suggestion yet... Add ingredients to see suggestions.</p>;
-  if ((loading && !fetched) || !ratingsFetched) return <p className="center-message">Loading suggestions...</p>;
+  if ((loading && !fetched) || !ratingsFetched) {
+    return (
+      <div className="center-message" style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop:"100px" }}>
+      {loadingAnimation ? (
+        <Lottie
+          animationData={loadingAnimation}
+          loop
+          autoplay
+          style={{ width: 150, height: 150 }}
+        />
+      ) : (
+        <p style={{ marginTop: "10px" }}>Loading suggestions...</p>
+      )}
+    </div>
+    );
+  }
   if (fetchError && !recipes.length) return <p className="center-message" style={{ color: 'red' }}>Failed to load suggestions: {fetchError}</p>;
   if (!loading && fetched && ratingsFetched && !sortedRecipes.length) return <p className="center-message">No suggestions found.</p>;
 
