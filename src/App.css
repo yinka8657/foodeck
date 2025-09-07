@@ -1188,7 +1188,6 @@ html, body {
   top: var(--top-offset, 80px); /* dynamically controlled by React */
   z-index: 1000;
   background-color: white;
-  padding-bottom: 0.5rem;
   transition: transform 0.3s ease;
 }
 
