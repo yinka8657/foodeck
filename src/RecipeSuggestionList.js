@@ -9,8 +9,6 @@ import API_URL from "./config";
 import Lottie from "lottie-react";
 import loadingAnimation from "./assets/Loadingbar.json";
 
-
-
 function RecipeSuggestionList() {
   const { selectedIngredients, setRecipeCount } = useContext(SelectedIngredientsContext);
   const [recipes, setRecipes] = useState([]);
@@ -20,17 +18,24 @@ function RecipeSuggestionList() {
   const [ratings, setRatings] = useState({});
   const [fetched, setFetched] = useState(false);
   const [ratingsFetched, setRatingsFetched] = useState(false);
+  const [renderTick, setRenderTick] = useState(0); // 👈 trigger re-render
+
+  // 👇 Fix invisible/broken render on mobile: re-render when tab/page becomes visible again
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        setRenderTick(t => t + 1);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
 
   // Stable key for caching + effect dependencies
   const ingredientKey = useMemo(() => {
     if (!selectedIngredients?.length) return "";
     return selectedIngredients.map(i => i.name).sort().join("_");
   }, [selectedIngredients]);
-
-  useEffect(() => {
-    // forces browser to repaint
-    window.scrollTo(window.scrollX, window.scrollY);
-  }, []);  
 
   // Fetch & cache recipes
   useEffect(() => {
@@ -41,7 +46,6 @@ function RecipeSuggestionList() {
       setRecipeCount(0);
       return;
     }
-  
 
     const cacheKey = `recipeSuggestions_${ingredientKey}`;
     const cacheTimeKey = cacheKey + "_time";
@@ -153,28 +157,30 @@ function RecipeSuggestionList() {
   }, [sortedRecipes, setRecipeCount, ratingsFetched]);
 
   // --- UI ---
-  if (!selectedIngredients?.length) return <p className="center-message">No Recipe Suggestion yet... Add ingredients to see suggestions.</p>;
+  if (!selectedIngredients?.length)
+    return <p className="center-message">No Recipe Suggestion yet... Add ingredients to see suggestions.</p>;
+
   if ((loading && !fetched) || !ratingsFetched) {
     return (
-      <div className="center-message" style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop:"100px" }}>
-      {loadingAnimation ? (
+      <div className="center-message" style={{ marginTop: "100px" }}>
         <Lottie
           animationData={loadingAnimation}
           loop
           autoplay
           style={{ width: 150, height: 150 }}
         />
-      ) : (
-        <p style={{ marginTop: "10px" }}>Loading suggestions...</p>
-      )}
-    </div>
+      </div>
     );
   }
-  if (fetchError && !recipes.length) return <p className="center-message" style={{ color: 'red' }}>Failed to load suggestions: {fetchError}</p>;
-  if (!loading && fetched && ratingsFetched && !sortedRecipes.length) return <p className="center-message">No suggestions found.</p>;
+
+  if (fetchError && !recipes.length)
+    return <p className="center-message" style={{ color: 'red' }}>Failed to load suggestions: {fetchError}</p>;
+
+  if (!loading && fetched && ratingsFetched && !sortedRecipes.length)
+    return <p className="center-message">No suggestions found.</p>;
 
   return (
-    <div className="Recipehome" style={{ top: '100px', paddingTop: "15px" }}>
+    <div key={renderTick} className="Recipehome" style={{ top: '100px', paddingTop: "15px" }}>
       <div className='SortButton' onClick={() => setSortDescending(prev => !prev)}>
         <img src={sortDescending ? sortbuttonbackward : sortbuttonforward} alt="sort" style={{ width: '100%', height: '100%' }} />
       </div>
