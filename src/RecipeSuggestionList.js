@@ -27,6 +27,11 @@ function RecipeSuggestionList() {
     return selectedIngredients.map(i => i.name).sort().join("_");
   }, [selectedIngredients]);
 
+  useEffect(() => {
+    // forces browser to repaint
+    window.scrollTo(window.scrollX, window.scrollY);
+  }, []);  
+
   // Fetch & cache recipes
   useEffect(() => {
     if (!ingredientKey) {
@@ -36,6 +41,7 @@ function RecipeSuggestionList() {
       setRecipeCount(0);
       return;
     }
+  
 
     const cacheKey = `recipeSuggestions_${ingredientKey}`;
     const cacheTimeKey = cacheKey + "_time";
