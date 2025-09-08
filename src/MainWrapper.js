@@ -3,17 +3,27 @@ import SignUpLogin from "./SignUpLogin";
 import { Routes, Route } from "react-router-dom";
 import App from "./App";
 import InstallPage from "./InstallPage";
-import { supabase } from "./supabaseClient"; // ✅ supabase client with persistSession
+import Onboarding from "./Onboarding"; // 👈 your Swiper.js onboarding component
+import { supabase } from "./supabaseClient";
 
 export default function MainWrapper() {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // ✅ prevent flicker
+  const [isLoading, setIsLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false); // 👈 track onboarding
 
-  // ✅ Initialize user on first load
+  // ✅ Initialize user & onboarding on first load
   useEffect(() => {
     const initUser = async () => {
       try {
-        // Try localStorage first
+       // // 🔹 Check if onboarding was already seen
+        const seenOnboarding = localStorage.getItem("hasSeenOnboarding");
+        if (!seenOnboarding) {
+          setShowOnboarding(true);
+          setIsLoading(false);
+          return; // 👈 stop here until user finishes onboarding
+        } //
+
+        // 🔹 Check localStorage user
         const savedUser = localStorage.getItem("user");
         if (savedUser) {
           try {
@@ -29,7 +39,7 @@ export default function MainWrapper() {
           }
         }
 
-        // Fallback: fetch from Supabase session
+        // 🔹 Fallback: fetch from Supabase session
         const {
           data: { session },
           error,
@@ -48,14 +58,14 @@ export default function MainWrapper() {
         console.error("❌ initUser error:", err);
         setUser(null);
       } finally {
-        setIsLoading(false); // ✅ only finish after check
+        setIsLoading(false);
       }
     };
 
     initUser();
   }, []);
 
-  // ✅ Keep app in sync with Supabase auth events
+  // ✅ Supabase auth state sync
   useEffect(() => {
     const { data: subscription } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -71,12 +81,16 @@ export default function MainWrapper() {
       }
     );
 
-    return () => {
-      subscription.subscription.unsubscribe();
-    };
+    return () => subscription.subscription.unsubscribe();
   }, []);
 
-  // ✅ Called after login success
+  // ✅ After onboarding is complete
+  const handleFinishOnboarding = () => {
+    localStorage.setItem("hasSeenOnboarding", "true");
+    setShowOnboarding(false);
+  };
+
+  // ✅ Login & Logout helpers
   const handleLogin = async () => {
     const {
       data: { session },
@@ -92,7 +106,6 @@ export default function MainWrapper() {
     }
   };
 
-  // ✅ Logout handler
   const handleLogout = async () => {
     await supabase.auth.signOut();
     localStorage.removeItem("user");
@@ -102,12 +115,12 @@ export default function MainWrapper() {
 
   // ✅ Prevent flicker
   if (isLoading) {
-    return (
-      <div className="splash-screen">
-        {/* Replace with your splash component if you have one */}
-        Loading...
-      </div>
-    );
+    return <div className="splash-screen">Loading...</div>;
+  }
+
+  // ✅ Onboarding takes precedence
+  if (showOnboarding) {
+    return <Onboarding onFinish={handleFinishOnboarding} />;
   }
 
   return (
